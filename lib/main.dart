@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musk_mover/app_theme.dart';
+import 'package:musk_mover/screens/splash_screen.dart';
 
 void main() {
   runApp(const MuskMoverApp());
@@ -14,7 +15,7 @@ class MuskMoverApp extends StatelessWidget {
       title: 'MuskMover',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const HomePage(),
+      home: const SplashScreen(),
     );
   }
 }
