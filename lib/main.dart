@@ -34,17 +34,20 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const HomePage(),
-    const MarketplaceScreen(),
-    const CartScreen(),
-    const Center(child: Text('Saved Items')), // Placeholder
-    const ProfileScreen(),
+    const HomePage(key: PageStorageKey('home')),
+    const MarketplaceScreen(key: PageStorageKey('marketplace')),
+    const CartScreen(key: PageStorageKey('cart')),
+    const Center(child: Text('Saved Items')),
+    const ProfileScreen(key: PageStorageKey('profile')),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
