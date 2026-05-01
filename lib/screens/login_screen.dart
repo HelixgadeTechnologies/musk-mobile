@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musk_mover/app_theme.dart';
 import 'package:musk_mover/main.dart'; // To navigate to HomePage
+import 'package:musk_mover/screens/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -115,7 +116,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const Text("Don't have an account?"),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SignupScreen()),
+                        );
+                      },
                       child: const Text('Sign Up', style: TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.bold)),
                     ),
                   ],

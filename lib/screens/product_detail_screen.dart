@@ -106,7 +106,7 @@ class ProductDetailScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                        Row(
                           children: [
                             Icon(Icons.settings_outlined, color: AppTheme.primaryColor, size: 20),
                         const SizedBox(width: 8),
