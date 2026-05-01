@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:musk_mover/app_theme.dart';
 import 'package:musk_mover/screens/splash_screen.dart';
 import 'package:musk_mover/screens/marketplace_screen.dart';
+import 'package:musk_mover/screens/profile_screen.dart';
+import 'package:musk_mover/screens/cart_screen.dart';
 
 void main() {
   runApp(const MuskMoverApp());
@@ -34,8 +36,8 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const HomePage(),
     const MarketplaceScreen(),
-    const Center(child: Text('Logistics Page')), // Placeholder
-    const Center(child: Text('Profile Page')), // Placeholder
+    const CartScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -55,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.storefront_rounded), label: 'Marketplace'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment_rounded), label: 'Logistics'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_rounded), label: 'Cart'),
           BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
         ],
       ),
