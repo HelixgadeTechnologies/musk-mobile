@@ -27,7 +27,9 @@ class Vessel {
       status: json['status']?.toString(),
       condition: json['condition']?.toString(),
       dailyRate: json['dailyRate']?.toString(),
-      images: json['images'] != null ? List<String>.from(json['images']) : [],
+      images: json['images'] is List 
+          ? List<String>.from(json['images']) 
+          : (json['images'] is String ? [json['images'] as String] : []),
       yearBuilt: json['yearBuilt']?.toString(),
     );
   }
@@ -60,7 +62,9 @@ class Equipment {
       status: json['status']?.toString(),
       condition: json['condition']?.toString(),
       dailyRate: json['dailyRate']?.toString(),
-      images: json['images'] != null ? List<String>.from(json['images']) : [],
+      images: json['images'] is List 
+          ? List<String>.from(json['images']) 
+          : (json['images'] is String ? [json['images'] as String] : []),
     );
   }
 }
