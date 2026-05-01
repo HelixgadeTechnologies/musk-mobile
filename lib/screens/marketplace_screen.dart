@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musk_mover/app_theme.dart';
+import 'package:musk_mover/screens/product_detail_screen.dart';
 
 class MarketplaceScreen extends StatefulWidget {
   const MarketplaceScreen({super.key});
@@ -236,7 +237,12 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ProductDetailScreen()),
+                          );
+                        },
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: AppTheme.primaryColor),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
