@@ -10,104 +10,208 @@ class MarketplaceScreen extends StatefulWidget {
 }
 
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
-  final List<String> categories = [
-    'All',
-    'Vessels',
-    'Cargo Equipment',
-    'Diving Gear',
-    'Navigation',
-    'Safety',
-    'Propulsion',
+  final List<Map<String, dynamic>> categories = [
+    {'name': 'VESSELS', 'icon': Icons.directions_boat_filled_rounded},
+    {'name': 'EQUIPMENT', 'icon': Icons.engineering_rounded},
+    {'name': 'TECH', 'icon': Icons.terminal_rounded},
+    {'name': 'OFFSHORE', 'icon': Icons.oil_barrel_rounded},
+    {'name': 'SAFETY', 'icon': Icons.security_rounded},
+    {'name': 'LOGISTICS', 'icon': Icons.local_shipping_rounded},
   ];
-  
-  String selectedCategory = 'All';
+
+  int selectedCategoryIndex = 0;
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('MARKETPLACE'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded, color: AppTheme.primaryColor),
+          onPressed: () {},
+        ),
+        title: const Text('CATEGORIES', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 18)),
+        centerTitle: true,
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.filter_list_rounded)),
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: AppTheme.primaryColor),
+            onPressed: () {},
+          ),
         ],
       ),
       body: Column(
         children: [
           // Search Bar
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search equipment...',
-                prefixIcon: const Icon(Icons.search),
+                hintText: 'Search equipment, services...',
+                prefixIcon: const Icon(Icons.search, color: AppTheme.textSecondaryColor),
                 filled: true,
-                fillColor: AppTheme.backgroundColor,
+                fillColor: AppTheme.primaryColor.withValues(alpha: 0.03),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
           
-          // Category Chips
-          SizedBox(
-            height: 50,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                final isSelected = selectedCategory == category;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(category),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        selectedCategory = category;
-                      });
+          Expanded(
+            child: Row(
+              children: [
+                // Left Sidebar
+                Container(
+                  width: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(right: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.05))),
+                  ),
+                  child: ListView.builder(
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final isSelected = selectedCategoryIndex == index;
+                      return GestureDetector(
+                        onTap: () => setState(() => selectedCategoryIndex = index),
+                        child: Container(
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.03) : Colors.transparent,
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              if (isSelected)
+                                Positioned(
+                                  left: 0,
+                                  top: 15,
+                                  bottom: 15,
+                                  child: Container(width: 4, decoration: const BoxDecoration(color: AppTheme.primaryColor, borderRadius: BorderRadius.horizontal(right: Radius.circular(4)))),
+                                ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    categories[index]['icon'],
+                                    color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
+                                    size: 28,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    categories[index]['name'],
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
-                    selectedColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                    checkmarkColor: AppTheme.primaryColor,
-                    labelStyle: TextStyle(
-                      color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                      side: BorderSide(
-                        color: isSelected ? AppTheme.primaryColor : const Color(0xFFE2E8F0),
-                      ),
+                  ),
+                ),
+                
+                // Right Content Area
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('EXPLORE COLLECTIONS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.primaryColor, letterSpacing: 1.2)),
+                                const SizedBox(height: 4),
+                                Text('${categories[selectedCategoryIndex]['name']} FLEET', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            TextButton(
+                              onPressed: () {},
+                              child: const Row(
+                                children: [
+                                  Text('View All', style: TextStyle(fontSize: 12, color: AppTheme.textSecondaryColor)),
+                                  Icon(Icons.chevron_right_rounded, size: 16, color: AppTheme.textSecondaryColor),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        
+                        // Grid of items
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.8,
+                            mainAxisSpacing: 20,
+                            crossAxisSpacing: 16,
+                          ),
+                          itemCount: 6,
+                          itemBuilder: (context, index) {
+                            return _buildCategoryItem(
+                              context,
+                              'MV ELIZABET ${index + 1}',
+                              index == 0 ? 'NEW' : (index == 2 ? 'SALE' : null),
+                            );
+                          },
+                        ),
+                        
+                        const SizedBox(height: 32),
+                        
+                        // Promo Banner
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppTheme.primaryColor, Color(0xFF1E293B)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Build Your Fleet', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                              const SizedBox(height: 8),
+                              const Text('Start with a base specification and customize.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFB800),
+                                  foregroundColor: Colors.black,
+                                  minimumSize: const Size(0, 40),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: const Text('CUSTOMIZE NOW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Product List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: 5, // Demo items
-              itemBuilder: (context, index) {
-                return _buildProductListItem(
-                  context,
-                  title: index == 0 ? 'MV MAMAELIZABET1' : 'Marine Propulsion System X1',
-                  category: index == 0 ? 'VESSELS' : 'PROPULSION',
-                  price: r'$1,250,000',
-                  specs: {
-                    'Year': '2018',
-                    'Weight': '450 Tons',
-                    'Condition': 'Excellent',
-                  },
-                );
-              },
+                ),
+              ],
             ),
           ),
         ],
@@ -115,155 +219,50 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
-  Widget _buildProductListItem(
-    BuildContext context, {
-    required String title,
-    required String category,
-    required String price,
-    required Map<String, String> specs,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+  Widget _buildCategoryItem(BuildContext context, String title, String? badge) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductDetailScreen()));
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Section
-          Stack(
-            children: [
-              Container(
-                height: 200,
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppTheme.backgroundColor,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-                ),
-                child: const Icon(Icons.directions_boat_filled_rounded, size: 64, color: Color(0xFFCBD5E1)),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.backgroundColor,
+                borderRadius: BorderRadius.circular(16),
               ),
-              Positioned(
-                top: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.secondaryColor,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    category,
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                ),
+              child: Stack(
+                children: [
+                  const Center(child: Icon(Icons.directions_boat_filled_rounded, color: Color(0xFFCBD5E1), size: 48)),
+                  if (badge != null)
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: badge == 'NEW' ? const Color(0xFFFFB800) : AppTheme.secondaryColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          badge,
+                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: badge == 'NEW' ? Colors.black : Colors.white),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              Positioned(
-                bottom: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'AVAILABLE',
-                    style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-          
-          // Details Section
+          const SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      price,
-                      style: const TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-                // Technical Specs Grid-like Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: specs.entries.map((entry) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          entry.key.toUpperCase(),
-                          style: const TextStyle(fontSize: 10, color: AppTheme.textSecondaryColor, fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          entry.value,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-                
-                const SizedBox(height: 20),
-                
-                // Action Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const ProductDetailScreen()),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppTheme.primaryColor),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                        ),
-                        child: const Text('VIEW DETAILS', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
