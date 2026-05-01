@@ -222,9 +222,9 @@ class HomePage extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       children: [
-                        _buildFlashCard(context, 'Hydraulic Pump', '-25%', 0.7),
-                        _buildFlashCard(context, 'Main Engine X1', '-40%', 0.3),
-                        _buildFlashCard(context, 'Life Raft', '-25%', 0.9),
+                        _buildFlashCard(context, 'Hydraulic Pump', '-25%', 0.7, 'assets/images/engine_1.png'),
+                        _buildFlashCard(context, 'Main Engine X1', '-40%', 0.3, 'assets/images/engine_1.png'),
+                        _buildFlashCard(context, 'Life Raft', '-25%', 0.9, 'assets/images/safety_1.png'),
                       ],
                     ),
                   ),
@@ -253,10 +253,10 @@ class HomePage extends StatelessWidget {
                     crossAxisSpacing: 16,
                     childAspectRatio: 0.65,
                     children: [
-                      _buildRecommendedCard(context, 'MV MAMAELIZABET1', 'VESSELS'),
-                      _buildRecommendedCard(context, 'Explorer Utility', 'VESSELS'),
-                      _buildRecommendedCard(context, 'Marine Engine', 'EQUIPMENT'),
-                      _buildRecommendedCard(context, 'Diving Kit Pro', 'SAFETY'),
+                      _buildRecommendedCard(context, 'MV MAMAELIZABET1', 'VESSELS', 'assets/images/vessel_1.png'),
+                      _buildRecommendedCard(context, 'Explorer Utility', 'VESSELS', 'assets/images/vessel_1.png'),
+                      _buildRecommendedCard(context, 'Marine Engine', 'EQUIPMENT', 'assets/images/engine_1.png'),
+                      _buildRecommendedCard(context, 'Diving Kit Pro', 'SAFETY', 'assets/images/safety_1.png'),
                     ],
                   ),
                 ],
@@ -327,7 +327,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildFlashCard(BuildContext context, String name, String discount, double stock) {
+  Widget _buildFlashCard(BuildContext context, String name, String discount, double stock, String imagePath) {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductDetailScreen()));
@@ -341,7 +341,14 @@ class HomePage extends StatelessWidget {
           children: [
             Stack(
               children: [
-                Container(height: 100, decoration: const BoxDecoration(color: Color(0xFFF1F5F9), borderRadius: BorderRadius.vertical(top: Radius.circular(12)))),
+                Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
+                  ),
+                ),
                 Positioned(
                   top: 8,
                   left: 8,
@@ -374,7 +381,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildRecommendedCard(BuildContext context, String name, String category) {
+  Widget _buildRecommendedCard(BuildContext context, String name, String category, String imagePath) {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductDetailScreen()));
@@ -386,7 +393,14 @@ class HomePage extends StatelessWidget {
           children: [
             Stack(
               children: [
-                Container(height: 140, decoration: const BoxDecoration(color: Color(0xFFF8FAFC), borderRadius: BorderRadius.vertical(top: Radius.circular(12)))),
+                Container(
+                  height: 140,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
+                  ),
+                ),
                 const Positioned(top: 8, right: 8, child: Icon(Icons.favorite_border_rounded, size: 20, color: Color(0xFFCBD5E1))),
               ],
             ),

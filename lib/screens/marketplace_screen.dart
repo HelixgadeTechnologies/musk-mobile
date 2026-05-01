@@ -296,8 +296,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       child: Image.network(
                         imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Center(
-                          child: Icon(isVessel ? Icons.directions_boat_filled_rounded : Icons.engineering_rounded, color: const Color(0xFFCBD5E1), size: 48),
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          isVessel ? 'assets/images/vessel_1.png' : 'assets/images/engine_1.png',
+                          fit: BoxFit.cover,
                         ),
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
@@ -313,7 +314,10 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       ),
                     )
                   else
-                    Center(child: Icon(isVessel ? Icons.directions_boat_filled_rounded : Icons.engineering_rounded, color: const Color(0xFFCBD5E1), size: 48)),
+                    Image.asset(
+                      isVessel ? 'assets/images/vessel_1.png' : 'assets/images/engine_1.png',
+                      fit: BoxFit.cover,
+                    ),
                   if (badge != null && badge.isNotEmpty)
                     Positioned(
                       top: 10,
