@@ -150,14 +150,18 @@ class HomePage extends StatelessWidget {
                         const SizedBox(height: 8),
                         const Text('Premium Fleet\nOffshore Deals', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24)),
                         const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFFB800),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        SizedBox(
+                          width: 160,
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFB800),
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              minimumSize: const Size(0, 40), // Override the global infinity width
+                            ),
+                            child: const Text('EXPLORE FLEET', style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
-                          child: const Text('EXPLORE FLEET', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),

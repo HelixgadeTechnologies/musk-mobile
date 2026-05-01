@@ -90,11 +90,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 
                 const SizedBox(height: 40),
                 
-                ElevatedButton(
-                  onPressed: () {
-                    // Logic to handle signup
-                  },
-                  child: const Text('CREATE ACCOUNT'),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Logic to handle signup
+                    },
+                    child: const Text('CREATE ACCOUNT'),
+                  ),
                 ),
                 
                 const SizedBox(height: 24),

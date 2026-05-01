@@ -52,9 +52,9 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: secondaryColor,
           foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 56),
+          minimumSize: const Size(64, 56), // Removed double.infinity to prevent unconstrained layout crashes
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4), // Sharp corners as per website
+            borderRadius: BorderRadius.circular(4),
           ),
           textStyle: GoogleFonts.geist(
             fontSize: 16,
