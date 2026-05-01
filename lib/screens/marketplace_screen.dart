@@ -217,11 +217,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               final item = items[index];
               final title = isVessel ? (item as Vessel).name : (item as Equipment).name;
               final badge = isVessel ? (item as Vessel).status : (item as Equipment).status;
+              final images = isVessel ? (item as Vessel).images : (item as Equipment).images;
+              final imageUrl = images.isNotEmpty ? images.first : null;
               
               return _buildCategoryItem(
                 context,
                 title,
                 badge,
+                imageUrl: imageUrl,
                 isVessel: isVessel,
               );
             },
@@ -271,7 +274,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
-  Widget _buildCategoryItem(BuildContext context, String title, String? badge, {required bool isVessel}) {
+  Widget _buildCategoryItem(BuildContext context, String title, String? badge, {required bool isVessel, String? imageUrl}) {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductDetailScreen()));
@@ -281,13 +284,36 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
         children: [
           Expanded(
             child: Container(
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: AppTheme.backgroundColor,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Stack(
                 children: [
-                  Center(child: Icon(isVessel ? Icons.directions_boat_filled_rounded : Icons.engineering_rounded, color: const Color(0xFFCBD5E1), size: 48)),
+                  if (imageUrl != null && imageUrl.isNotEmpty)
+                    Positioned.fill(
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Center(
+                          child: Icon(isVessel ? Icons.directions_boat_filled_rounded : Icons.engineering_rounded, color: const Color(0xFFCBD5E1), size: 48),
+                        ),
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                  : null,
+                              strokeWidth: 2,
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  else
+                    Center(child: Icon(isVessel ? Icons.directions_boat_filled_rounded : Icons.engineering_rounded, color: const Color(0xFFCBD5E1), size: 48)),
                   if (badge != null && badge.isNotEmpty)
                     Positioned(
                       top: 10,
