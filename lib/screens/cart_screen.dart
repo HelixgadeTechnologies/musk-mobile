@@ -57,7 +57,6 @@ class CartScreen extends StatelessWidget {
               name: 'MV MAMAELIZABET1',
               info: 'Lease Duration: 6 Months',
               status: 'Excellent Condition',
-              price: r'$1,250,000',
             ),
             const SizedBox(height: 16),
             _buildCartItem(
@@ -65,7 +64,6 @@ class CartScreen extends StatelessWidget {
               name: 'Hydraulic Pump System',
               info: 'Model: HP-X900',
               status: 'In Stock',
-              price: r'$4,200',
             ),
             
             const SizedBox(height: 24),
@@ -112,21 +110,20 @@ class CartScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order Summary', style: textTheme.displayMedium?.copyWith(fontSize: 20)),
+                  Text('Enquiry Summary', style: textTheme.displayMedium?.copyWith(fontSize: 20)),
                   const SizedBox(height: 24),
-                  _buildSummaryRow('Subtotal', r'$1,254,200'),
-                  const SizedBox(height: 12),
-                  _buildSummaryRow('Delivery Fee', r'$500.00'),
-                  const SizedBox(height: 12),
-                  _buildSummaryRow('Tax (Calculated)', r'$125,470.00'),
-                  const Divider(height: 40, thickness: 1, color: Color(0xFFF1F5F9)),
+                  const Text(
+                    'Your selection of marine assets will be sent to our fleet management team for a detailed quote.',
+                    style: TextStyle(color: AppTheme.textSecondaryColor, height: 1.5),
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                      const Text('Total Items', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       Text(
-                        r'$1,380,170.00',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: AppTheme.primaryColor),
+                        '2 Products',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.primaryColor),
                       ),
                     ],
                   ),
@@ -143,10 +140,10 @@ class CartScreen extends StatelessWidget {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.verified_user_outlined, color: AppTheme.primaryColor, size: 16),
+                        Icon(Icons.mark_email_read_outlined, color: AppTheme.primaryColor, size: 16),
                         SizedBox(width: 8),
                         Text(
-                          'SECURE CHECKOUT GUARANTEED',
+                          'FLEET ENQUIRY SYSTEM',
                           style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 10),
                         ),
                       ],
@@ -168,9 +165,9 @@ class CartScreen extends StatelessWidget {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Proceed to Payment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text('Send Enquiry', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           SizedBox(width: 12),
-                          Icon(Icons.arrow_forward_rounded, size: 20),
+                          Icon(Icons.send_rounded, size: 20),
                         ],
                       ),
                     ),
@@ -178,18 +175,12 @@ class CartScreen extends StatelessWidget {
                   
                   const SizedBox(height: 24),
                   
-                  // Payment Icons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildPaymentIcon('VISA'),
-                      const SizedBox(width: 8),
-                      _buildPaymentIcon('MC'),
-                      const SizedBox(width: 8),
-                      _buildPaymentIcon('APPLE'),
-                      const SizedBox(width: 8),
-                      _buildPaymentIcon('PAYPAL'),
-                    ],
+                  const Center(
+                    child: Text(
+                      'A response will be sent to your registered company email within 24 hours.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                    ),
                   ),
                 ],
               ),
@@ -201,7 +192,7 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCartItem(BuildContext context, {required String name, required String info, required String status, required String price}) {
+  Widget _buildCartItem(BuildContext context, {required String name, required String info, required String status}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -278,9 +269,9 @@ class CartScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              Text(
-                price,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.primaryColor),
+              const Text(
+                'Quote Pending',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.primaryColor),
               ),
             ],
           ),
@@ -289,27 +280,4 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(color: AppTheme.textSecondaryColor, fontSize: 14)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      ],
-    );
-  }
-
-  Widget _buildPaymentIcon(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF94A3B8)),
-      ),
-    );
-  }
 }
