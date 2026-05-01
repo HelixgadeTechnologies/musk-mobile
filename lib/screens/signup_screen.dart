@@ -47,19 +47,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 32),
                 
-                // Company Information Group
-                _buildSectionTitle('Company Information'),
-                const SizedBox(height: 16),
-                _buildTextField('Company Legal Name', Icons.business_rounded, hint: 'e.g. Musk Logistics Ltd'),
-                const SizedBox(height: 16),
-                _buildTextField('Industry Sector', Icons.category_rounded, hint: 'e.g. Oil & Gas, Shipping'),
-                const SizedBox(height: 16),
-                _buildTextField('Company Email Address', Icons.alternate_email_rounded, hint: 'company@example.com', keyboardType: TextInputType.emailAddress),
-                const SizedBox(height: 16),
-                _buildTextField('Company Phone Number', Icons.phone_rounded, hint: '+234...', keyboardType: TextInputType.phone),
-                
-                const SizedBox(height: 32),
-                
                 // Contact Person Group
                 _buildSectionTitle('Contact Person Details'),
                 const SizedBox(height: 16),
@@ -87,6 +74,19 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                 ),
+                
+                const SizedBox(height: 32),
+                
+                // Company Information Group
+                _buildSectionTitle('Company Information'),
+                const SizedBox(height: 16),
+                _buildTextField('Company Legal Name', Icons.business_rounded, hint: 'e.g. Musk Logistics Ltd'),
+                const SizedBox(height: 16),
+                _buildTextField('Industry Sector', Icons.category_rounded, hint: 'e.g. Oil & Gas, Shipping'),
+                const SizedBox(height: 16),
+                _buildTextField('Company Email Address', Icons.alternate_email_rounded, hint: 'company@example.com', keyboardType: TextInputType.emailAddress),
+                const SizedBox(height: 16),
+                _buildTextField('Company Phone Number', Icons.phone_rounded, hint: '+234...', keyboardType: TextInputType.phone),
                 
                 const SizedBox(height: 40),
                 
