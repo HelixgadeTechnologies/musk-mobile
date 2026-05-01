@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () {
                   // Navigate to Home for demo
                   Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const HomePage()),
+                    MaterialPageRoute(builder: (context) => const MainScreen()),
                   );
                 },
                 child: const Text('LOG IN'),

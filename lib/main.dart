@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:musk_mover/app_theme.dart';
 import 'package:musk_mover/screens/splash_screen.dart';
+import 'package:musk_mover/screens/marketplace_screen.dart';
 
 void main() {
   runApp(const MuskMoverApp());
@@ -16,6 +17,48 @@ class MuskMoverApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const SplashScreen(),
+    );
+  }
+}
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = [
+    const HomePage(),
+    const MarketplaceScreen(),
+    const Center(child: Text('Logistics Page')), // Placeholder
+    const Center(child: Text('Profile Page')), // Placeholder
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        selectedItemColor: AppTheme.primaryColor,
+        unselectedItemColor: AppTheme.textSecondaryColor,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.storefront_rounded), label: 'Marketplace'),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment_rounded), label: 'Logistics'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
+        ],
+      ),
     );
   }
 }
@@ -40,7 +83,7 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero Section - Marine Focused
+            // Hero Section
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
@@ -77,7 +120,7 @@ class HomePage extends StatelessWidget {
                     style: textTheme.bodyLarge?.copyWith(color: Colors.white.withValues(alpha: 0.8)),
                   ),
                   const SizedBox(height: 32),
-                  // Search Bar
+                  // Search Bar Preview
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
@@ -164,7 +207,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
 
-            // Featured Marketplace Items (Preview)
+            // Featured Marketplace Items
             Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -191,18 +234,6 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 40),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: AppTheme.primaryColor,
-        unselectedItemColor: AppTheme.textSecondaryColor,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.storefront_rounded), label: 'Marketplace'),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment_rounded), label: 'Logistics'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
-        ],
       ),
     );
   }
