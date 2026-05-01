@@ -21,14 +21,14 @@ class Vessel {
 
   factory Vessel.fromJson(Map<String, dynamic> json) {
     return Vessel(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      type: json['type'] ?? '',
-      status: json['status'],
-      condition: json['condition'],
-      dailyRate: json['dailyRate'],
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      type: (json['type'] ?? '').toString(),
+      status: json['status']?.toString(),
+      condition: json['condition']?.toString(),
+      dailyRate: json['dailyRate']?.toString(),
       images: json['images'] != null ? List<String>.from(json['images']) : [],
-      yearBuilt: json['yearBuilt'],
+      yearBuilt: json['yearBuilt']?.toString(),
     );
   }
 }
@@ -54,12 +54,12 @@ class Equipment {
 
   factory Equipment.fromJson(Map<String, dynamic> json) {
     return Equipment(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      category: json['category'] ?? '',
-      status: json['status'],
-      condition: json['condition'],
-      dailyRate: json['dailyRate'],
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      category: (json['category'] ?? '').toString(),
+      status: json['status']?.toString(),
+      condition: json['condition']?.toString(),
+      dailyRate: json['dailyRate']?.toString(),
       images: json['images'] != null ? List<String>.from(json['images']) : [],
     );
   }
