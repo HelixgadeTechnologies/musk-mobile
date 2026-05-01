@@ -80,7 +80,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Row(
               children: [
                 const Text(
-                  r'$1,250,000',
+                  'Price on Request',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
                 ),
                 const SizedBox(width: 12),
@@ -251,11 +251,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   height: 56,
                   child: ElevatedButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.shopping_cart_outlined),
-                    label: const Text('Add to Bag', style: TextStyle(fontWeight: FontWeight.bold)),
+                    icon: const Icon(Icons.mail_outline_rounded),
+                    label: const Text('Make Enquiry', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFB800),
-                      foregroundColor: Colors.black,
+                      backgroundColor: AppTheme.primaryColor,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),

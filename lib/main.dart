@@ -221,9 +221,9 @@ class HomePage extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       children: [
-                        _buildFlashCard('Hydraulic Pump', r'$4,500', r'$3,375', '-25%', 0.7),
-                        _buildFlashCard('Main Engine X1', r'$3,200', r'$1,920', '-40%', 0.3),
-                        _buildFlashCard('Life Raft', r'$1,200', r'$900', '-25%', 0.9),
+                        _buildFlashCard('Hydraulic Pump', '-25%', 0.7),
+                        _buildFlashCard('Main Engine X1', '-40%', 0.3),
+                        _buildFlashCard('Life Raft', '-25%', 0.9),
                       ],
                     ),
                   ),
@@ -252,10 +252,10 @@ class HomePage extends StatelessWidget {
                     crossAxisSpacing: 16,
                     childAspectRatio: 0.65,
                     children: [
-                      _buildRecommendedCard('MV MAMAELIZABET1', 'VESSELS', r'$1.2M'),
-                      _buildRecommendedCard('Explorer Utility', 'VESSELS', r'$7,200/d'),
-                      _buildRecommendedCard('Marine Engine', 'EQUIPMENT', r'$9,500'),
-                      _buildRecommendedCard('Diving Kit Pro', 'SAFETY', r'$3,200'),
+                      _buildRecommendedCard('MV MAMAELIZABET1', 'VESSELS'),
+                      _buildRecommendedCard('Explorer Utility', 'VESSELS'),
+                      _buildRecommendedCard('Marine Engine', 'EQUIPMENT'),
+                      _buildRecommendedCard('Diving Kit Pro', 'SAFETY'),
                     ],
                   ),
                 ],
@@ -326,7 +326,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildFlashCard(String name, String oldPrice, String newPrice, String discount, double stock) {
+  Widget _buildFlashCard(String name, String discount, double stock) {
     return Container(
       width: 160,
       margin: const EdgeInsets.only(right: 16),
@@ -353,8 +353,9 @@ class HomePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(oldPrice, style: const TextStyle(color: Color(0xFF94A3B8), decoration: TextDecoration.lineThrough, fontSize: 10)),
-                Text(newPrice, style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                const Text('Contact for Price', style: TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.w500, fontSize: 11)),
                 const SizedBox(height: 8),
                 LinearProgressIndicator(value: stock, backgroundColor: const Color(0xFFF1F5F9), color: const Color(0xFFFFB800), minHeight: 4),
                 const SizedBox(height: 4),
@@ -367,7 +368,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildRecommendedCard(String name, String category, String price) {
+  Widget _buildRecommendedCard(String name, String category) {
     return Container(
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFF1F5F9))),
       child: Column(
@@ -387,15 +388,15 @@ class HomePage extends StatelessWidget {
                 Text(category, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(price, style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
+                    const Text('Inquire', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 12)),
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.add_shopping_cart_rounded, size: 16, color: Colors.black),
+                      child: const Icon(Icons.mail_outline_rounded, size: 16, color: Colors.black),
                     ),
                   ],
                 ),
