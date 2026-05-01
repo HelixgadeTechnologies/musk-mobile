@@ -34,11 +34,11 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const HomePage(key: PageStorageKey('home')),
-    const MarketplaceScreen(key: PageStorageKey('marketplace')),
-    const CartScreen(key: PageStorageKey('cart')),
-    const Center(child: Text('Saved Items')),
-    const ProfileScreen(key: PageStorageKey('profile')),
+    const RepaintBoundary(child: HomePage(key: PageStorageKey('home'))),
+    const RepaintBoundary(child: MarketplaceScreen(key: PageStorageKey('marketplace'))),
+    const RepaintBoundary(child: CartScreen(key: PageStorageKey('cart'))),
+    const RepaintBoundary(child: Center(child: Text('Saved Items'))),
+    const RepaintBoundary(child: ProfileScreen(key: PageStorageKey('profile'))),
   ];
 
   @override
