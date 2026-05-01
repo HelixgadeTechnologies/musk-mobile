@@ -58,7 +58,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   width: 200,
                   height: 200,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+                const Text(
+                  'Your Marine Fleet, On Demand',
+                  style: TextStyle(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 32),
                 const SizedBox(
                   width: 40,
                   height: 40,

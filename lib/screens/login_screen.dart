@@ -35,12 +35,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 48),
               Text(
-                'Welcome Back',
+                'Welcome to MuskMover',
                 style: textTheme.displayMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'Log in to your MuskMover account to manage your relocations.',
+                'Log in to your Marine Marketplace account to manage your vessel rentals and equipment orders.',
                 style: textTheme.bodyMedium,
               ),
               const SizedBox(height: 40),

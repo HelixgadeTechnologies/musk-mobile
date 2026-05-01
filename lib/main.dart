@@ -12,7 +12,7 @@ class MuskMoverApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MuskMover',
+      title: 'MuskMover - Marine Marketplace',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const SplashScreen(),
@@ -31,21 +31,19 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('MUSKMOVER'),
         actions: [
-          TextButton(
-            onPressed: () {},
-            child: const Text('Login', style: TextStyle(color: Colors.white)),
-          ),
-          const SizedBox(width: 16),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.shopping_cart_outlined)),
+          const SizedBox(width: 8),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero Section
+            // Hero Section - Marine Focused
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 80),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
               decoration: const BoxDecoration(
                 color: AppTheme.primaryColor,
               ),
@@ -59,7 +57,7 @@ class HomePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
-                      'LOGISTICS & MOVING',
+                      'MARINE MARKETPLACE',
                       style: TextStyle(
                         color: AppTheme.secondaryColor,
                         fontWeight: FontWeight.bold,
@@ -70,119 +68,226 @@ class HomePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Relocate with ease,\nanywhere in Nigeria.',
+                    'Your Marine Fleet,\nOn Demand.',
                     style: textTheme.displayLarge?.copyWith(color: Colors.white),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   Text(
-                    'Professional moving services for your home and office. Fast, secure, and reliable.',
+                    'The world’s largest marketplace for vessel rentals & marine equipment.',
                     style: textTheme.bodyLarge?.copyWith(color: Colors.white.withValues(alpha: 0.8)),
                   ),
-                  const SizedBox(height: 40),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          child: const Text('GET A QUOTE'),
-                        ),
+                  const SizedBox(height: 32),
+                  // Search Bar
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Ex. SS Marina, Hydraulic Pump, PSV...',
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        icon: Icon(Icons.search, color: AppTheme.textSecondaryColor),
                       ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Categories Grid
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Browse by Type', style: textTheme.displayMedium),
+                      TextButton(onPressed: () {}, child: const Text('View All')),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 1.5,
+                    children: [
+                      _buildCategoryCard(context, 'Vessels', Icons.directions_boat_filled_rounded),
+                      _buildCategoryCard(context, 'Engines', Icons.settings_input_component_rounded),
+                      _buildCategoryCard(context, 'Navigation', Icons.explore_rounded),
+                      _buildCategoryCard(context, 'Safety Gear', Icons.health_and_safety_rounded),
                     ],
                   ),
                 ],
               ),
             ),
 
-            // Features Section
-            Padding(
-              padding: const EdgeInsets.all(24.0),
+            // Services Section
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              color: AppTheme.backgroundColor,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Our Services', style: textTheme.displayMedium),
-                  const SizedBox(height: 32),
-                  _buildServiceCard(
+                  Text('Marine Solutions', style: textTheme.displayMedium),
+                  const SizedBox(height: 24),
+                  _buildSolutionItem(
                     context,
-                    icon: Icons.home_rounded,
-                    title: 'Home Moving',
-                    description: 'Full-service residential relocation handled by experts.',
-                  ),
-                  const SizedBox(height: 16),
-                  _buildServiceCard(
-                    context,
-                    icon: Icons.business_rounded,
-                    title: 'Office Relocation',
-                    description: 'Minimize downtime with our efficient office moving solutions.',
-                  ),
-                  const SizedBox(height: 16),
-                  _buildServiceCard(
-                    context,
+                    title: 'Offshore Logistics',
+                    subtitle: 'Rig support & bulk liquid delivery.',
                     icon: Icons.local_shipping_rounded,
-                    title: 'Interstate Haulage',
-                    description: 'Safe transport of goods across all states in Nigeria.',
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSolutionItem(
+                    context,
+                    title: 'Energy Solutions',
+                    subtitle: 'Offshore bunker supply & fuel delivery.',
+                    icon: Icons.ev_station_rounded,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSolutionItem(
+                    context,
+                    title: 'Vessel Operations',
+                    subtitle: 'Anchor handling & deep water towing.',
+                    icon: Icons.anchor_rounded,
+                  ),
+                ],
+              ),
+            ),
+
+            // Featured Marketplace Items (Preview)
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Latest in Marketplace', style: textTheme.displayMedium),
+                  const SizedBox(height: 24),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildProductCard(context, 'Boston Whaler 270', 'Rental', r'$1,200 / day'),
+                        const SizedBox(width: 16),
+                        _buildProductCard(context, 'Yamaha Outboard', 'Purchase', r'$15,500'),
+                        const SizedBox(width: 16),
+                        _buildProductCard(context, 'Hydraulic Pump', 'In Stock', r'$4,200'),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
             
-            // Footer-like CTA
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(40),
-              color: Colors.white,
-              child: Column(
-                children: [
-                  const Icon(Icons.support_agent_rounded, size: 48, color: AppTheme.primaryColor),
-                  const SizedBox(height: 16),
-                  Text('Need Help?', style: textTheme.displayMedium),
-                  const SizedBox(height: 8),
-                  const Text('Speak with our support team today.'),
-                  const SizedBox(height: 24),
-                  OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppTheme.primaryColor),
-                      minimumSize: const Size(200, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                    ),
-                    child: const Text('CONTACT US', style: TextStyle(color: AppTheme.primaryColor)),
-                  ),
-                ],
-              ),
-            ),
+            const SizedBox(height: 40),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        selectedItemColor: AppTheme.primaryColor,
+        unselectedItemColor: AppTheme.textSecondaryColor,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.storefront_rounded), label: 'Marketplace'),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment_rounded), label: 'Logistics'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
+        ],
       ),
     );
   }
 
-  Widget _buildServiceCard(BuildContext context, {required IconData icon, required String title, required String description}) {
+  Widget _buildCategoryCard(BuildContext context, String title, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Icon(icon, color: AppTheme.primaryColor),
-          ),
+          Icon(icon, color: AppTheme.primaryColor, size: 32),
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSolutionItem(BuildContext context, {required String title, required String subtitle, required IconData icon}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppTheme.secondaryColor),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
+          ),
+          const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.textSecondaryColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductCard(BuildContext context, String name, String tag, String price) {
+    return Container(
+      width: 200,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 120,
+            width: double.infinity,
+            color: AppTheme.backgroundColor,
+            child: const Icon(Icons.image, color: Color(0xFFCBD5E1), size: 40),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Text(
+                    tag.toUpperCase(),
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text(description, style: Theme.of(context).textTheme.bodyMedium),
+                Text(price, style: const TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
