@@ -4,6 +4,7 @@ import 'package:musk_mover/screens/splash_screen.dart';
 import 'package:musk_mover/screens/marketplace_screen.dart';
 import 'package:musk_mover/screens/profile_screen.dart';
 import 'package:musk_mover/screens/cart_screen.dart';
+import 'package:musk_mover/screens/product_detail_screen.dart';
 
 void main() {
   runApp(const MuskMoverApp());
@@ -180,11 +181,11 @@ class HomePage extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  _buildCategoryItem('Vessels', Icons.directions_boat_filled_rounded),
-                  _buildCategoryItem('Engines', Icons.settings_input_component_rounded),
-                  _buildCategoryItem('Safety', Icons.health_and_safety_rounded),
-                  _buildCategoryItem('Navigation', Icons.explore_rounded),
-                  _buildCategoryItem('Parts', Icons.build_rounded),
+                  _buildCategoryItem(context, 'Vessels', Icons.directions_boat_filled_rounded),
+                  _buildCategoryItem(context, 'Engines', Icons.settings_input_component_rounded),
+                  _buildCategoryItem(context, 'Safety', Icons.health_and_safety_rounded),
+                  _buildCategoryItem(context, 'Navigation', Icons.explore_rounded),
+                  _buildCategoryItem(context, 'Parts', Icons.build_rounded),
                 ],
               ),
             ),
@@ -221,9 +222,9 @@ class HomePage extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       children: [
-                        _buildFlashCard('Hydraulic Pump', '-25%', 0.7),
-                        _buildFlashCard('Main Engine X1', '-40%', 0.3),
-                        _buildFlashCard('Life Raft', '-25%', 0.9),
+                        _buildFlashCard(context, 'Hydraulic Pump', '-25%', 0.7),
+                        _buildFlashCard(context, 'Main Engine X1', '-40%', 0.3),
+                        _buildFlashCard(context, 'Life Raft', '-25%', 0.9),
                       ],
                     ),
                   ),
@@ -252,10 +253,10 @@ class HomePage extends StatelessWidget {
                     crossAxisSpacing: 16,
                     childAspectRatio: 0.65,
                     children: [
-                      _buildRecommendedCard('MV MAMAELIZABET1', 'VESSELS'),
-                      _buildRecommendedCard('Explorer Utility', 'VESSELS'),
-                      _buildRecommendedCard('Marine Engine', 'EQUIPMENT'),
-                      _buildRecommendedCard('Diving Kit Pro', 'SAFETY'),
+                      _buildRecommendedCard(context, 'MV MAMAELIZABET1', 'VESSELS'),
+                      _buildRecommendedCard(context, 'Explorer Utility', 'VESSELS'),
+                      _buildRecommendedCard(context, 'Marine Engine', 'EQUIPMENT'),
+                      _buildRecommendedCard(context, 'Diving Kit Pro', 'SAFETY'),
                     ],
                   ),
                 ],
@@ -301,7 +302,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryItem(String label, IconData icon) {
+  Widget _buildCategoryItem(BuildContext context, String label, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(right: 20),
       child: Column(
@@ -326,84 +327,94 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildFlashCard(String name, String discount, double stock) {
-    return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(height: 100, decoration: const BoxDecoration(color: Color(0xFFF1F5F9), borderRadius: BorderRadius.vertical(top: Radius.circular(12)))),
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(4)),
-                  child: Text(discount, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildFlashCard(BuildContext context, String name, String discount, double stock) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductDetailScreen()));
+      },
+      child: Container(
+        width: 160,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                const Text('Contact for Price', style: TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.w500, fontSize: 11)),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(value: stock, backgroundColor: const Color(0xFFF1F5F9), color: const Color(0xFFFFB800), minHeight: 4),
-                const SizedBox(height: 4),
-                Text('${(stock * 20).toInt()} items left', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 8)),
+                Container(height: 100, decoration: const BoxDecoration(color: Color(0xFFF1F5F9), borderRadius: BorderRadius.vertical(top: Radius.circular(12)))),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(4)),
+                    child: Text(discount, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 4),
+                  const Text('Contact for Price', style: TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.w500, fontSize: 11)),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: stock, backgroundColor: const Color(0xFFF1F5F9), color: const Color(0xFFFFB800), minHeight: 4),
+                  const SizedBox(height: 4),
+                  Text('${(stock * 20).toInt()} items left', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 8)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildRecommendedCard(String name, String category) {
-    return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFF1F5F9))),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(height: 140, decoration: const BoxDecoration(color: Color(0xFFF8FAFC), borderRadius: BorderRadius.vertical(top: Radius.circular(12)))),
-              const Positioned(top: 8, right: 8, child: Icon(Icons.favorite_border_rounded, size: 20, color: Color(0xFFCBD5E1))),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildRecommendedCard(BuildContext context, String name, String category) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductDetailScreen()));
+      },
+      child: Container(
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFF1F5F9))),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
               children: [
-                Text(category, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Inquire', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 12)),
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.mail_outline_rounded, size: 16, color: Colors.black),
-                    ),
-                  ],
-                ),
+                Container(height: 140, decoration: const BoxDecoration(color: Color(0xFFF8FAFC), borderRadius: BorderRadius.vertical(top: Radius.circular(12)))),
+                const Positioned(top: 8, right: 8, child: Icon(Icons.favorite_border_rounded, size: 20, color: Color(0xFFCBD5E1))),
               ],
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(category, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Inquire', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(8)),
+                        child: const Icon(Icons.mail_outline_rounded, size: 16, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
