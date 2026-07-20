@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:musk_mover/providers/cart_provider.dart';
 import 'package:musk_mover/app_theme.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -250,7 +252,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 child: SizedBox(
                   height: 56,
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                      cartProvider.addItem(CartItem(
+                        id: 'dummy_vessel_1',
+                        name: 'MV MAMAELIZABET1',
+                        info: 'Lease Duration: 6 Months',
+                        status: 'Excellent Condition',
+                        type: 'vessel',
+                      ));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Added to Enquiry Cart!'),
+                          backgroundColor: AppTheme.primaryColor,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.mail_outline_rounded),
                     label: const Text('Make Enquiry', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(

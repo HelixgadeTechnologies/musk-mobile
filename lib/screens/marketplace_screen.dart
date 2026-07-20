@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:musk_mover/app_theme.dart';
 import 'package:musk_mover/models/product_model.dart';
 import 'package:musk_mover/screens/product_detail_screen.dart';
-import 'package:musk_mover/services/api_service.dart';
-
+import 'package:provider/provider.dart';
+import 'package:musk_mover/providers/product_provider.dart';
+import 'package:musk_mover/widgets/custom_loading_state.dart';
+import 'package:musk_mover/widgets/custom_error_state.dart';
 class MarketplaceScreen extends StatefulWidget {
   const MarketplaceScreen({super.key});
 
@@ -12,8 +14,16 @@ class MarketplaceScreen extends StatefulWidget {
 }
 
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
-  final ApiService _apiService = ApiService();
-  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<ProductProvider>(context, listen: false);
+      provider.fetchVessels();
+      provider.fetchEquipment();
+    });
+  }
+
   final List<Map<String, dynamic>> categories = [
     {'name': 'VESSELS', 'icon': Icons.directions_boat_filled_rounded},
     {'name': 'EQUIPMENT', 'icon': Icons.engineering_rounded},
@@ -138,39 +148,39 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   Widget _buildContentArea() {
     final categoryName = categories[selectedCategoryIndex]['name'];
     
-    if (categoryName == 'VESSELS') {
-      return FutureBuilder<List<Vessel>>(
-        future: _apiService.fetchVessels(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+    return Consumer<ProductProvider>(
+      builder: (context, productProvider, child) {
+        if (categoryName == 'VESSELS') {
+          if (productProvider.isLoadingVessels) {
+            return const CustomLoadingState(message: 'Loading Fleet...');
+          } else if (productProvider.vesselsError != null) {
+            return CustomErrorState(
+              message: productProvider.vesselsError!,
+              onRetry: () => productProvider.fetchVessels(),
+            );
+          } else if (productProvider.vessels.isEmpty) {
             return const Center(child: Text('No vessels available.'));
           } else {
-            return _buildProductList(snapshot.data!, isVessel: true);
+            return _buildProductList(productProvider.vessels, isVessel: true);
           }
-        },
-      );
-    } else if (categoryName == 'EQUIPMENT') {
-      return FutureBuilder<List<Equipment>>(
-        future: _apiService.fetchEquipment(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        } else if (categoryName == 'EQUIPMENT') {
+          if (productProvider.isLoadingEquipment) {
+            return const CustomLoadingState(message: 'Loading Equipment...');
+          } else if (productProvider.equipmentError != null) {
+            return CustomErrorState(
+              message: productProvider.equipmentError!,
+              onRetry: () => productProvider.fetchEquipment(),
+            );
+          } else if (productProvider.equipment.isEmpty) {
             return const Center(child: Text('No equipment available.'));
           } else {
-            return _buildProductList(snapshot.data!, isVessel: false);
+            return _buildProductList(productProvider.equipment, isVessel: false);
           }
-        },
-      );
-    } else {
-      return Center(child: Text('No data for $categoryName yet.'));
-    }
+        } else {
+          return Center(child: Text('No data for $categoryName yet.'));
+        }
+      },
+    );
   }
 
   Widget _buildProductList(List<dynamic> items, {required bool isVessel}) {

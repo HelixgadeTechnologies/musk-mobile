@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:musk_mover/providers/cart_provider.dart';
 import 'package:musk_mover/app_theme.dart';
 
 class CartScreen extends StatelessWidget {
@@ -35,7 +37,9 @@ class CartScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('My Selection (2)', style: textTheme.displayMedium?.copyWith(fontSize: 22)),
+                Consumer<CartProvider>(
+                  builder: (context, cart, _) => Text('My Selection (${cart.itemCount})', style: textTheme.displayMedium?.copyWith(fontSize: 22)),
+                ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -52,18 +56,27 @@ class CartScreen extends StatelessWidget {
             const SizedBox(height: 24),
             
             // Cart Items
-            _buildCartItem(
-              context,
-              name: 'MV MAMAELIZABET1',
-              info: 'Lease Duration: 6 Months',
-              status: 'Excellent Condition',
-            ),
-            const SizedBox(height: 16),
-            _buildCartItem(
-              context,
-              name: 'Hydraulic Pump System',
-              info: 'Model: HP-X900',
-              status: 'In Stock',
+            Consumer<CartProvider>(
+              builder: (context, cartProvider, child) {
+                if (cartProvider.items.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text('Your cart is empty.', style: TextStyle(color: AppTheme.textSecondaryColor)),
+                    ),
+                  );
+                }
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: cartProvider.items.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final item = cartProvider.items[index];
+                    return _buildCartItem(context, cartProvider, item);
+                  },
+                );
+              },
             ),
             
             const SizedBox(height: 24),
@@ -121,9 +134,11 @@ class CartScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Total Items', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text(
-                        '2 Products',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.primaryColor),
+                      Consumer<CartProvider>(
+                        builder: (context, cart, _) => Text(
+                          '${cart.itemCount} Products',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.primaryColor),
+                        ),
                       ),
                     ],
                   ),
@@ -192,7 +207,7 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCartItem(BuildContext context, {required String name, required String info, required String status}) {
+  Widget _buildCartItem(BuildContext context, CartProvider cartProvider, CartItem item) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -212,7 +227,10 @@ class CartScreen extends StatelessWidget {
                   color: AppTheme.backgroundColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.directions_boat_filled_rounded, color: AppTheme.primaryColor),
+                child: Icon(
+                  item.type == 'vessel' ? Icons.directions_boat_filled_rounded : Icons.engineering_rounded,
+                  color: AppTheme.primaryColor,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -224,13 +242,16 @@ class CartScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            name,
+                            item.name,
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Icon(Icons.delete_outline_rounded, color: AppTheme.secondaryColor, size: 20),
+                        GestureDetector(
+                          onTap: () => cartProvider.removeItem(item.id),
+                          child: const Icon(Icons.delete_outline_rounded, color: AppTheme.secondaryColor, size: 20),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -238,11 +259,11 @@ class CartScreen extends StatelessWidget {
                       children: [
                         const Icon(Icons.edit_outlined, size: 12, color: AppTheme.textSecondaryColor),
                         const SizedBox(width: 4),
-                        Text(info, style: const TextStyle(color: AppTheme.textSecondaryColor, fontSize: 12)),
+                        Text(item.info, style: const TextStyle(color: AppTheme.textSecondaryColor, fontSize: 12)),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(status, style: const TextStyle(color: AppTheme.textSecondaryColor, fontSize: 12)),
+                    Text(item.status, style: const TextStyle(color: AppTheme.textSecondaryColor, fontSize: 12)),
                   ],
                 ),
               ),
@@ -258,14 +279,20 @@ class CartScreen extends StatelessWidget {
                   color: AppTheme.primaryColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.remove, size: 16, color: AppTheme.primaryColor),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('1', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+                    GestureDetector(
+                      onTap: () => cartProvider.updateQuantity(item.id, item.quantity - 1),
+                      child: const Icon(Icons.remove, size: 16, color: AppTheme.primaryColor),
                     ),
-                    Icon(Icons.add, size: 16, color: AppTheme.primaryColor),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+                    ),
+                    GestureDetector(
+                      onTap: () => cartProvider.updateQuantity(item.id, item.quantity + 1),
+                      child: const Icon(Icons.add, size: 16, color: AppTheme.primaryColor),
+                    ),
                   ],
                 ),
               ),

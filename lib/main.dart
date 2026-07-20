@@ -5,9 +5,22 @@ import 'package:musk_mover/screens/marketplace_screen.dart';
 import 'package:musk_mover/screens/profile_screen.dart';
 import 'package:musk_mover/screens/cart_screen.dart';
 import 'package:musk_mover/screens/product_detail_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:musk_mover/providers/auth_provider.dart';
+import 'package:musk_mover/providers/cart_provider.dart';
+import 'package:musk_mover/providers/product_provider.dart';
 
 void main() {
-  runApp(const MuskMoverApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
+      child: const MuskMoverApp(),
+    ),
+  );
 }
 
 class MuskMoverApp extends StatelessWidget {
@@ -95,20 +108,32 @@ class HomePage extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(icon: const Icon(Icons.tune_rounded, color: Colors.black), onPressed: () {}),
-          Stack(
-            children: [
-              IconButton(icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black), onPressed: () {}),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(color: Color(0xFFFFB800), shape: BoxShape.circle),
-                  constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-                  child: const Text('3', style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                ),
-              )
-            ],
+          Consumer<CartProvider>(
+            builder: (context, cartProvider, child) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
+                    onPressed: () {},
+                  ),
+                  if (cartProvider.itemCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(color: Color(0xFFFFB800), shape: BoxShape.circle),
+                        constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                        child: Text(
+                          '${cartProvider.itemCount}',
+                          style: const TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ],
       ),
