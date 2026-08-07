@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:musk_mover/app_theme.dart';
+import 'package:musk_mover/main.dart';
+import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/screens/login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -12,6 +15,63 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
+
+  final _contactNameController = TextEditingController();
+  final _contactEmailController = TextEditingController();
+  final _contactPhoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _companyNameController = TextEditingController();
+  final _industrySectorController = TextEditingController();
+  final _companyEmailController = TextEditingController();
+  final _companyPhoneController = TextEditingController();
+
+  @override
+  void dispose() {
+    _contactNameController.dispose();
+    _contactEmailController.dispose();
+    _contactPhoneController.dispose();
+    _passwordController.dispose();
+    _companyNameController.dispose();
+    _industrySectorController.dispose();
+    _companyEmailController.dispose();
+    _companyPhoneController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSignup() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    final userData = {
+      'contactName': _contactNameController.text.trim(),
+      'email': _contactEmailController.text.trim(),
+      'contactPhone': _contactPhoneController.text.trim(),
+      'password': _passwordController.text,
+      'companyName': _companyNameController.text.trim(),
+      'industrySector': _industrySectorController.text.trim(),
+      'companyEmail': _companyEmailController.text.trim(),
+      'companyPhone': _companyPhoneController.text.trim(),
+    };
+
+    final success = await authProvider.register(userData);
+
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+        (route) => false,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? 'Registration failed. Please try again.'),
+          backgroundColor: AppTheme.secondaryColor,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,11 +110,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 // Contact Person Group
                 _buildSectionTitle('Contact Person Details'),
                 const SizedBox(height: 16),
-                _buildTextField('Contact Person Name', Icons.person_outline_rounded, hint: 'Full Name'),
+                _buildTextField('Contact Person Name', Icons.person_outline_rounded, controller: _contactNameController, hint: 'Full Name'),
                 const SizedBox(height: 16),
-                _buildTextField('Contact Person Email', Icons.email_outlined, hint: 'person@example.com', keyboardType: TextInputType.emailAddress),
+                _buildTextField('Contact Person Email', Icons.email_outlined, controller: _contactEmailController, hint: 'person@example.com', keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 16),
-                _buildTextField('Contact Person Phone', Icons.phone_android_rounded, hint: 'Mobile Number', keyboardType: TextInputType.phone),
+                _buildTextField('Contact Person Phone', Icons.phone_android_rounded, controller: _contactPhoneController, hint: 'Mobile Number', keyboardType: TextInputType.phone),
                 
                 const SizedBox(height: 32),
                 
@@ -64,9 +124,16 @@ class _SignupScreenState extends State<SignupScreen> {
                 Text('Password', style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 TextFormField(
+                  controller: _passwordController,
                   obscureText: _obscurePassword,
+                  validator: (value) {
+                    if (value == null || value.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
                   decoration: InputDecoration(
-                    hintText: 'Minimum 8 characters',
+                    hintText: 'Minimum 6 characters',
                     prefixIcon: const Icon(Icons.lock_outline_rounded),
                     suffixIcon: IconButton(
                       icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
@@ -80,24 +147,32 @@ class _SignupScreenState extends State<SignupScreen> {
                 // Company Information Group
                 _buildSectionTitle('Company Information'),
                 const SizedBox(height: 16),
-                _buildTextField('Company Legal Name', Icons.business_rounded, hint: 'e.g. Musk Logistics Ltd'),
+                _buildTextField('Company Legal Name', Icons.business_rounded, controller: _companyNameController, hint: 'e.g. Musk Logistics Ltd'),
                 const SizedBox(height: 16),
-                _buildTextField('Industry Sector', Icons.category_rounded, hint: 'e.g. Oil & Gas, Shipping'),
+                _buildTextField('Industry Sector', Icons.category_rounded, controller: _industrySectorController, hint: 'e.g. Oil & Gas, Shipping'),
                 const SizedBox(height: 16),
-                _buildTextField('Company Email Address', Icons.alternate_email_rounded, hint: 'company@example.com', keyboardType: TextInputType.emailAddress),
+                _buildTextField('Company Email Address', Icons.alternate_email_rounded, controller: _companyEmailController, hint: 'company@example.com', keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 16),
-                _buildTextField('Company Phone Number', Icons.phone_rounded, hint: '+234...', keyboardType: TextInputType.phone),
+                _buildTextField('Company Phone Number', Icons.phone_rounded, controller: _companyPhoneController, hint: '+234...', keyboardType: TextInputType.phone),
                 
                 const SizedBox(height: 40),
                 
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Logic to handle signup
-                    },
-                    child: const Text('CREATE ACCOUNT'),
-                  ),
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, _) {
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: authProvider.isLoading ? null : _handleSignup,
+                        child: authProvider.isLoading
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text('CREATE ACCOUNT'),
+                      ),
+                    );
+                  },
                 ),
                 
                 const SizedBox(height: 24),
@@ -150,14 +225,27 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildTextField(String label, IconData icon, {String? hint, TextInputType? keyboardType}) {
+  Widget _buildTextField(
+    String label,
+    IconData icon, {
+    required TextEditingController controller,
+    String? hint,
+    TextInputType? keyboardType,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         const SizedBox(height: 8),
         TextFormField(
+          controller: controller,
           keyboardType: keyboardType,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'This field is required';
+            }
+            return null;
+          },
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon),

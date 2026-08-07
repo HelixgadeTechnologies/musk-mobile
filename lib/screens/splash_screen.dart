@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:musk_mover/app_theme.dart';
+import 'package:musk_mover/main.dart';
+import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/screens/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -23,12 +26,20 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
     _controller.forward();
 
-    _navigateToLogin();
+    _checkAuthAndNavigate();
   }
 
-  _navigateToLogin() async {
+  Future<void> _checkAuthAndNavigate() async {
     await Future.delayed(const Duration(seconds: 3));
-    if (mounted) {
+    if (!mounted) return;
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    if (authProvider.isLoggedIn) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
@@ -52,6 +63,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             scale: _animation,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
                   'assets/images/logo.png',

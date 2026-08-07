@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:musk_mover/app_theme.dart';
+import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/screens/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -7,6 +9,17 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.user;
+
+    final contactName = user?['contactName'] ?? 'John Doe';
+    final email = user?['email'] ?? 'j.doe@musklogistics.com';
+    final contactPhone = user?['contactPhone'] ?? '+234 800 123 4567';
+    final companyName = user?['companyName'] ?? 'Musk Logistics Ltd';
+    final industrySector = user?['industrySector'] ?? 'Oil & Gas Services';
+    final companyEmail = user?['companyEmail'] ?? 'info@musklogistics.com';
+    final companyPhone = user?['companyPhone'] ?? '+234 1 234 5678';
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -47,9 +60,9 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Musk Logistics Ltd',
-                    style: TextStyle(color: AppTheme.primaryColor, fontSize: 22, fontWeight: FontWeight.bold),
+                  Text(
+                    companyName,
+                    style: const TextStyle(color: AppTheme.primaryColor, fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Container(
@@ -72,11 +85,11 @@ class ProfileScreen extends StatelessWidget {
             // Contact Person Section
             _buildSectionHeader('Contact Person Details'),
             _buildInfoContainer([
-              _buildRowItem('Full Name', 'John Doe'),
+              _buildRowItem('Full Name', contactName),
               _buildDivider(),
-              _buildRowItem('Work Email', 'j.doe@musklogistics.com'),
+              _buildRowItem('Work Email', email),
               _buildDivider(),
-              _buildRowItem('Phone', '+234 800 123 4567'),
+              _buildRowItem('Phone', contactPhone),
             ]),
             
             const SizedBox(height: 24),
@@ -84,13 +97,13 @@ class ProfileScreen extends StatelessWidget {
             // Company Details Section
             _buildSectionHeader('Company Information'),
             _buildInfoContainer([
-              _buildRowItem('Legal Name', 'Musk Logistics Limited'),
+              _buildRowItem('Legal Name', companyName),
               _buildDivider(),
-              _buildRowItem('Industry', 'Oil & Gas Services'),
+              _buildRowItem('Industry', industrySector),
               _buildDivider(),
-              _buildRowItem('Company Email', 'info@musklogistics.com'),
+              _buildRowItem('Company Email', companyEmail),
               _buildDivider(),
-              _buildRowItem('Company Phone', '+234 1 234 5678'),
+              _buildRowItem('Company Phone', companyPhone),
             ]),
             
             const SizedBox(height: 24),
@@ -109,11 +122,14 @@ class ProfileScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    (route) => false,
-                  );
+                onPressed: () async {
+                  await authProvider.logout();
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      (route) => false,
+                    );
+                  }
                 },
                 icon: const Icon(Icons.logout_rounded, color: AppTheme.secondaryColor, size: 18),
                 label: const Text('Sign Out of Company Account', style: TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.bold)),

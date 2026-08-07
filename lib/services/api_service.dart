@@ -34,4 +34,43 @@ class ApiService {
       throw Exception('Error fetching equipment: $e');
     }
   }
+
+  Future<Map<String, dynamic>> loginUser(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'password': password,
+        }),
+      );
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return responseData;
+      } else {
+        throw Exception(responseData['message'] ?? 'Failed to login');
+      }
+    } catch (e) {
+      throw Exception('Login error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> registerUser(Map<String, dynamic> userData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(userData),
+      );
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return responseData;
+      } else {
+        throw Exception(responseData['message'] ?? 'Failed to register');
+      }
+    } catch (e) {
+      throw Exception('Registration error: $e');
+    }
+  }
 }
