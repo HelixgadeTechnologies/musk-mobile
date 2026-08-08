@@ -44,11 +44,11 @@ class _SignupScreenState extends State<SignupScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     final userData = {
-      'contactName': _contactNameController.text.trim(),
-      'email': _contactEmailController.text.trim(),
-      'contactPhone': _contactPhoneController.text.trim(),
+      'contactPersonName': _contactNameController.text.trim(),
+      'contactPersonEmail': _contactEmailController.text.trim(),
+      'contactPersonPhone': _contactPhoneController.text.trim(),
       'password': _passwordController.text,
-      'companyName': _companyNameController.text.trim(),
+      'companyLegalName': _companyNameController.text.trim(),
       'industrySector': _industrySectorController.text.trim(),
       'companyEmail': _companyEmailController.text.trim(),
       'companyPhone': _companyPhoneController.text.trim(),
@@ -243,6 +243,12 @@ class _SignupScreenState extends State<SignupScreen> {
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return 'This field is required';
+            }
+            if (keyboardType == TextInputType.emailAddress) {
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(value.trim())) {
+                return 'Please enter a valid email address';
+              }
             }
             return null;
           },

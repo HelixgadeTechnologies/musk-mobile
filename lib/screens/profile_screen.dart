@@ -12,10 +12,10 @@ class ProfileScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
 
-    final contactName = user?['contactName'] ?? 'John Doe';
-    final email = user?['email'] ?? 'j.doe@musklogistics.com';
-    final contactPhone = user?['contactPhone'] ?? '+234 800 123 4567';
-    final companyName = user?['companyName'] ?? 'Musk Logistics Ltd';
+    final contactName = user?['contactPersonName'] ?? user?['contactName'] ?? 'John Doe';
+    final email = user?['contactPersonEmail'] ?? user?['email'] ?? 'j.doe@musklogistics.com';
+    final contactPhone = user?['contactPersonPhone'] ?? user?['contactPhone'] ?? '+234 800 123 4567';
+    final companyName = user?['companyLegalName'] ?? user?['companyName'] ?? 'Musk Logistics Ltd';
     final industrySector = user?['industrySector'] ?? 'Oil & Gas Services';
     final companyEmail = user?['companyEmail'] ?? 'info@musklogistics.com';
     final companyPhone = user?['companyPhone'] ?? '+234 1 234 5678';

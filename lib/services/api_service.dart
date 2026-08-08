@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:musk_mover/models/product_model.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://musk-backend.onrender.com/api';
+  static const String baseUrl = 'http://206.189.238.173:5000/api';
 
   Future<List<Vessel>> fetchVessels() async {
     try {
@@ -49,9 +49,10 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return responseData;
       } else {
-        throw Exception(responseData['message'] ?? 'Failed to login');
+        throw Exception(responseData['message'] ?? responseData['error'] ?? 'Failed to login');
       }
     } catch (e) {
+      if (e is Exception) rethrow;
       throw Exception('Login error: $e');
     }
   }
@@ -67,9 +68,10 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return responseData;
       } else {
-        throw Exception(responseData['message'] ?? 'Failed to register');
+        throw Exception(responseData['message'] ?? responseData['error'] ?? 'Failed to register');
       }
     } catch (e) {
+      if (e is Exception) rethrow;
       throw Exception('Registration error: $e');
     }
   }
