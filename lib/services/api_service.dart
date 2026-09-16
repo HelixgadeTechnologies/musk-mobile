@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:musk_mover/models/product_model.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://206.189.238.173:5000/api';
+  static const String baseUrl = 'http://206.189.238.173:80/api';
 
   Future<List<Vessel>> fetchVessels() async {
     try {
