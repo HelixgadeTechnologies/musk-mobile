@@ -23,8 +23,8 @@ class ProductProvider extends ChangeNotifier {
   String? get vesselsError => _vesselsError;
   String? get equipmentError => _equipmentError;
 
-  Future<void> fetchVessels() async {
-    if (_vessels.isNotEmpty) return; // Cache
+  Future<void> fetchVessels({bool forceRefresh = false}) async {
+    if (_vessels.isNotEmpty && !forceRefresh) return; // Cache
 
     _isLoadingVessels = true;
     _vesselsError = null;

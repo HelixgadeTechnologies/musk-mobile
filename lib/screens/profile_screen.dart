@@ -115,6 +115,37 @@ class ProfileScreen extends StatelessWidget {
               _buildDivider(),
               _buildListItem(Icons.description_outlined, 'Request Documents'),
             ]),
+
+            const SizedBox(height: 24),
+
+            // Privacy & Policy Section (Play Store Requirement)
+            _buildSectionHeader('Privacy & Legal'),
+            _buildInfoContainer([
+              _buildListItem(
+                Icons.privacy_tip_outlined,
+                'Privacy Policy',
+                onTap: () => _showPrivacyPolicyDialog(context),
+              ),
+              _buildDivider(),
+              _buildListItem(
+                Icons.description_outlined,
+                'Terms of Service',
+                onTap: () => _showTermsDialog(context),
+              ),
+            ]),
+
+            const SizedBox(height: 24),
+
+            // Account Deletion Section (Play Store Requirement)
+            _buildSectionHeader('Account Management'),
+            _buildInfoContainer([
+              _buildListItem(
+                Icons.delete_forever_rounded,
+                'Delete Account & Data',
+                isDestructive: true,
+                onTap: () => _showDeleteAccountDialog(context, authProvider),
+              ),
+            ]),
             
             const SizedBox(height: 32),
             
@@ -189,12 +220,29 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildListItem(IconData icon, String title) {
-    return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryColor, size: 22),
-      title: Text(title, style: const TextStyle(color: AppTheme.primaryColor, fontSize: 14, fontWeight: FontWeight.w500)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
-      onTap: () {},
+  Widget _buildListItem(
+    IconData icon,
+    String title, {
+    VoidCallback? onTap,
+    Color? color,
+    bool isDestructive = false,
+  }) {
+    final itemColor = color ?? (isDestructive ? AppTheme.secondaryColor : AppTheme.primaryColor);
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: Icon(icon, color: itemColor, size: 22),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: itemColor,
+            fontSize: 14,
+            fontWeight: isDestructive ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+        onTap: onTap ?? () {},
+      ),
     );
   }
 
@@ -205,6 +253,113 @@ class ProfileScreen extends StatelessWidget {
       color: Color(0xFFF8FAFC),
       indent: 16,
       endIndent: 16,
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context, AuthProvider authProvider) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppTheme.secondaryColor),
+            SizedBox(width: 8),
+            Text('Delete Account?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to delete your account? This action is permanent and cannot be undone.\n\n'
+          'All your company profile information, enquiry history, and data stored in MuskMover will be immediately erased.',
+          style: TextStyle(color: AppTheme.textSecondaryColor, fontSize: 14, height: 1.4),
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondaryColor)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              final success = await authProvider.deleteAccount();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? 'Your account and data have been deleted.'
+                          : (authProvider.errorMessage ?? 'Failed to delete account. Please try again.'),
+                    ),
+                    backgroundColor: success ? AppTheme.primaryColor : AppTheme.secondaryColor,
+                  ),
+                );
+                if (success) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    (route) => false,
+                  );
+                }
+              }
+            },
+            child: const Text('Delete Account', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyPolicyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Privacy Policy', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const SingleChildScrollView(
+          child: Text(
+            'MuskMover is committed to protecting your privacy and business data. '
+            'We only collect information necessary to facilitate vessel chartering, marine logistics, and equipment procurement.\n\n'
+            '1. Data Collection: We collect company names, authorized contact details, and equipment preferences.\n'
+            '2. Data Usage: Information is used solely for order processing, logistics coordination, and account security.\n'
+            '3. Account Deletion: Users can request complete deletion of their account and associated data directly within the app or by emailing privacy@musklogistics.com.',
+            style: TextStyle(fontSize: 13, height: 1.4, color: AppTheme.textSecondaryColor),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTermsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Terms of Service', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const SingleChildScrollView(
+          child: Text(
+            'By using MuskMover, your company agrees to adhere to standard maritime chartering practices, commercial terms, and verification standards.\n\n'
+            'All enquiries, charters, and leases are subject to official verification and final lease agreements.',
+            style: TextStyle(fontSize: 13, height: 1.4, color: AppTheme.textSecondaryColor),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 }

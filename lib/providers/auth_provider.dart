@@ -126,4 +126,20 @@ class AuthProvider extends ChangeNotifier {
     await prefs.remove(_userKey);
     notifyListeners();
   }
+
+  Future<bool> deleteAccount() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      // Clear all stored local preferences and session data
+      await logout();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

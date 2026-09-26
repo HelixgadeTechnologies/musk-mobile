@@ -3,18 +3,33 @@ import 'package:http/http.dart' as http;
 import 'package:musk_mover/models/product_model.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://206.189.238.173:80/api';
+  static const String baseUrl = 'https://api.muskmover.ng/api';
 
   Future<List<Vessel>> fetchVessels() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/vessels'));
+      List<dynamic> data = [];
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
-        final List<dynamic> data = responseData['data'] ?? [];
-        return data.map((json) => Vessel.fromJson(json)).toList();
+        data = responseData['data'] ?? [];
       } else {
         throw Exception('Failed to load vessels');
       }
+
+      // If vessels endpoint is empty, check equipment endpoint for items categorized as vessels
+      if (data.isEmpty) {
+        final equipResponse = await http.get(Uri.parse('$baseUrl/equipment'));
+        if (equipResponse.statusCode == 200) {
+          final Map<String, dynamic> equipData = json.decode(equipResponse.body);
+          final List<dynamic> equipList = equipData['data'] ?? [];
+          data = equipList.where((item) {
+            final category = item['category']?.toString().toLowerCase();
+            return category == 'vessels' || category == 'vessel';
+          }).toList();
+        }
+      }
+
+      return data.map((json) => Vessel.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Error fetching vessels: $e');
     }

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:musk_mover/providers/cart_provider.dart';
 import 'package:musk_mover/app_theme.dart';
+import 'package:musk_mover/models/product_model.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  const ProductDetailScreen({super.key});
+  final Vessel? vessel;
+  const ProductDetailScreen({super.key, this.vessel});
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -17,6 +19,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+
+    final vessel = widget.vessel;
+    final vesselImage = vessel?.images.isNotEmpty == true ? vessel!.images.first : null;
+    final vesselName = vessel?.name ?? 'MV MAMAELIZABET1';
+    final vesselPrice = vessel?.dailyRate != null && vessel!.dailyRate!.isNotEmpty 
+        ? '₦${vessel.dailyRate} / day' 
+        : 'Price on Request';
+    final vesselStatus = vessel?.status ?? 'IN STOCK';
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
@@ -45,14 +55,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Container(
               height: 350,
               width: double.infinity,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: AppTheme.backgroundColor,
                 borderRadius: BorderRadius.circular(16),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/logo.png'), // Placeholder
-                  fit: BoxFit.contain,
-                ),
               ),
+              child: vesselImage != null
+                  ? Image.network(
+                      vesselImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/images/vessel_1.png',
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Image.asset(
+                      'assets/images/vessel_1.png',
+                      fit: BoxFit.cover,
+                    ),
             ),
             const SizedBox(height: 16),
             
@@ -77,13 +97,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2),
             ),
             const SizedBox(height: 8),
-            Text('MV MAMAELIZABET1', style: textTheme.displayLarge?.copyWith(fontSize: 28)),
+            Text(vesselName, style: textTheme.displayLarge?.copyWith(fontSize: 28)),
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text(
-                  'Price on Request',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                Text(
+                  vesselPrice,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
                 ),
                 const SizedBox(width: 12),
                 Container(
@@ -92,17 +112,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    'IN STOCK',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.textSecondaryColor),
+                  child: Text(
+                    vesselStatus.toUpperCase(),
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.textSecondaryColor),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              'A high-performance utility vessel/crew boat optimized for offshore logistics. Featuring our proprietary specification engine for corporate fleet branding.',
-              style: TextStyle(color: AppTheme.textSecondaryColor, height: 1.5),
+            Text(
+              vessel?.condition != null 
+                  ? 'Condition: ${vessel!.condition}. A high-performance offshore vessel optimized for logistics and transport.'
+                  : 'A high-performance utility vessel/crew boat optimized for offshore logistics. Featuring our proprietary specification engine for corporate fleet branding.',
+              style: const TextStyle(color: AppTheme.textSecondaryColor, height: 1.5),
             ),
             
             const SizedBox(height: 32),
