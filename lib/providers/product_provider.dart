@@ -41,8 +41,8 @@ class ProductProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> fetchEquipment() async {
-    if (_equipment.isNotEmpty) return; // Cache
+  Future<void> fetchEquipment({bool forceRefresh = false}) async {
+    if (_equipment.isNotEmpty && !forceRefresh) return; // Cache
 
     _isLoadingEquipment = true;
     _equipmentError = null;

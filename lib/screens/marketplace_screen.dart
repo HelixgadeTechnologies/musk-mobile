@@ -6,17 +6,22 @@ import 'package:provider/provider.dart';
 import 'package:musk_mover/providers/product_provider.dart';
 import 'package:musk_mover/widgets/custom_loading_state.dart';
 import 'package:musk_mover/widgets/custom_error_state.dart';
+
 class MarketplaceScreen extends StatefulWidget {
-  const MarketplaceScreen({super.key});
+  final int initialCategoryIndex;
+  const MarketplaceScreen({super.key, this.initialCategoryIndex = 0});
 
   @override
   State<MarketplaceScreen> createState() => _MarketplaceScreenState();
 }
 
 class _MarketplaceScreenState extends State<MarketplaceScreen> {
+  late int selectedCategoryIndex;
+
   @override
   void initState() {
     super.initState();
+    selectedCategoryIndex = widget.initialCategoryIndex;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<ProductProvider>(context, listen: false);
       provider.fetchVessels();
@@ -32,8 +37,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     {'name': 'SAFETY', 'icon': Icons.security_rounded},
     {'name': 'LOGISTICS', 'icon': Icons.local_shipping_rounded},
   ];
-
-  int selectedCategoryIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -151,34 +154,69 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     return Consumer<ProductProvider>(
       builder: (context, productProvider, child) {
         if (categoryName == 'VESSELS') {
-          if (productProvider.isLoadingVessels) {
+          if (productProvider.isLoadingVessels && productProvider.vessels.isEmpty) {
             return const CustomLoadingState(message: 'Loading Fleet...');
-          } else if (productProvider.vesselsError != null) {
+          } else if (productProvider.vesselsError != null && productProvider.vessels.isEmpty) {
             return CustomErrorState(
               message: productProvider.vesselsError!,
-              onRetry: () => productProvider.fetchVessels(),
+              onRetry: () => productProvider.fetchVessels(forceRefresh: true),
             );
           } else if (productProvider.vessels.isEmpty) {
             return const Center(child: Text('No vessels available.'));
           } else {
             return _buildProductList(productProvider.vessels, isVessel: true);
           }
-        } else if (categoryName == 'EQUIPMENT') {
-          if (productProvider.isLoadingEquipment) {
-            return const CustomLoadingState(message: 'Loading Equipment...');
-          } else if (productProvider.equipmentError != null) {
-            return CustomErrorState(
-              message: productProvider.equipmentError!,
-              onRetry: () => productProvider.fetchEquipment(),
-            );
-          } else if (productProvider.equipment.isEmpty) {
-            return const Center(child: Text('No equipment available.'));
-          } else {
-            return _buildProductList(productProvider.equipment, isVessel: false);
-          }
-        } else {
-          return Center(child: Text('No data for $categoryName yet.'));
         }
+
+        // For other categories, we utilize equipment filtered by category
+        if (productProvider.isLoadingEquipment && productProvider.equipment.isEmpty) {
+          return const CustomLoadingState(message: 'Loading Equipment...');
+        } else if (productProvider.equipmentError != null && productProvider.equipment.isEmpty) {
+          return CustomErrorState(
+            message: productProvider.equipmentError!,
+            onRetry: () => productProvider.fetchEquipment(forceRefresh: true),
+          );
+        }
+
+        List<Equipment> filteredEquipment = [];
+        if (categoryName == 'EQUIPMENT') {
+          filteredEquipment = productProvider.equipment;
+        } else if (categoryName == 'SAFETY') {
+          filteredEquipment = productProvider.equipment
+              .where((e) => e.category.toLowerCase().contains('safe'))
+              .toList();
+        } else if (categoryName == 'TECH') {
+          filteredEquipment = productProvider.equipment
+              .where((e) =>
+                  e.category.toLowerCase().contains('nav') ||
+                  e.category.toLowerCase().contains('comm') ||
+                  e.category.toLowerCase().contains('tech'))
+              .toList();
+        } else if (categoryName == 'OFFSHORE') {
+          filteredEquipment = productProvider.equipment
+              .where((e) =>
+                  e.category.toLowerCase().contains('prop') ||
+                  e.category.toLowerCase().contains('cargo') ||
+                  e.category.toLowerCase().contains('vessel'))
+              .toList();
+        } else if (categoryName == 'LOGISTICS') {
+          filteredEquipment = productProvider.equipment
+              .where((e) =>
+                  e.category.toLowerCase().contains('cargo') ||
+                  e.category.toLowerCase().contains('crane'))
+              .toList();
+        }
+
+        if (filteredEquipment.isEmpty) {
+          // If a specific subcategory is empty, fallback to showing all equipment
+          filteredEquipment = productProvider.equipment;
+        }
+
+        if (filteredEquipment.isEmpty) {
+          return const Center(child: Text('No items available currently.'));
+        }
+
+        return _buildProductList(filteredEquipment, isVessel: false);
       },
     );
   }
@@ -192,13 +230,19 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('EXPLORE COLLECTIONS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.primaryColor, letterSpacing: 1.2)),
-                  const SizedBox(height: 4),
-                  Text('${categories[selectedCategoryIndex]['name']} FLEET', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('EXPLORE COLLECTIONS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.primaryColor, letterSpacing: 1.2)),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${categories[selectedCategoryIndex]['name']} FLEET',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
               TextButton(
                 onPressed: () {},
@@ -218,9 +262,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.8,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 16,
+              childAspectRatio: 0.70,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 14,
             ),
             itemCount: items.length,
             itemBuilder: (context, index) {
@@ -232,6 +276,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               
               return _buildCategoryItem(
                 context,
+                item,
                 title,
                 badge,
                 imageUrl: imageUrl,
@@ -284,81 +329,124 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
-  Widget _buildCategoryItem(BuildContext context, String title, String? badge, {required bool isVessel, String? imageUrl}) {
+  Widget _buildCategoryItem(
+    BuildContext context,
+    dynamic item,
+    String title,
+    String? badge, {
+    required bool isVessel,
+    String? imageUrl,
+  }) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductDetailScreen()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(
+              vessel: isVessel ? (item as Vessel) : null,
+              equipment: !isVessel ? (item as Equipment) : null,
+            ),
+          ),
+        );
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: AppTheme.backgroundColor,
-                borderRadius: BorderRadius.circular(16),
-              ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
               child: Stack(
                 children: [
-                  if (imageUrl != null && imageUrl.isNotEmpty)
-                    Positioned.fill(
-                      child: Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Image.asset(
-                          isVessel ? 'assets/images/vessel_1.png' : 'assets/images/engine_1.png',
-                          fit: BoxFit.cover,
-                        ),
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                  : null,
-                              strokeWidth: 2,
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  else
-                    Image.asset(
-                      isVessel ? 'assets/images/vessel_1.png' : 'assets/images/engine_1.png',
-                      fit: BoxFit.cover,
-                    ),
+                  Positioned.fill(
+                    child: (imageUrl != null && imageUrl.isNotEmpty)
+                        ? Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => _buildPlaceholder(isVessel: isVessel),
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              );
+                            },
+                          )
+                        : _buildPlaceholder(isVessel: isVessel),
+                  ),
                   if (badge != null && badge.isNotEmpty)
                     Positioned(
-                      top: 10,
-                      left: 10,
+                      top: 8,
+                      left: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                         decoration: BoxDecoration(
-                          color: badge.toUpperCase() == 'NEW' ? const Color(0xFFFFB800) : AppTheme.secondaryColor,
-                          borderRadius: BorderRadius.circular(8),
+                          color: badge.toUpperCase() == 'AVAILABLE'
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFFFB800),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          badge,
-                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: badge.toUpperCase() == 'NEW' ? Colors.black : Colors.white),
+                          badge.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                            color: badge.toUpperCase() == 'AVAILABLE' ? Colors.white : Colors.black,
+                          ),
                         ),
                       ),
                     ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Contact for Rates',
+                    style: TextStyle(color: AppTheme.primaryColor, fontSize: 10, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder({required bool isVessel}) {
+    return Container(
+      color: const Color(0xFFF8FAFC),
+      child: Center(
+        child: Icon(
+          isVessel ? Icons.directions_boat_rounded : Icons.precision_manufacturing_rounded,
+          color: const Color(0xFFCBD5E1),
+          size: 36,
+        ),
       ),
     );
   }

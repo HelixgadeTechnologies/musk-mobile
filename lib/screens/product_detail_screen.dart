@@ -6,27 +6,79 @@ import 'package:musk_mover/models/product_model.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Vessel? vessel;
-  const ProductDetailScreen({super.key, this.vessel});
+  final Equipment? equipment;
+
+  const ProductDetailScreen({
+    super.key,
+    this.vessel,
+    this.equipment,
+  });
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  String selectedFont = 'Serif';
+  int _selectedImageIndex = 0;
+  String selectedConfig = 'Diesel';
   Color selectedColor = AppTheme.primaryColor;
+
+  Widget _buildPlaceholder({double height = 350, bool isVessel = true}) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      color: const Color(0xFFF1F5F9),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isVessel ? Icons.directions_boat_rounded : Icons.precision_manufacturing_rounded,
+              size: 56,
+              color: const Color(0xFF94A3B8),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'No Image Available',
+              style: TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
     final vessel = widget.vessel;
-    final vesselImage = vessel?.images.isNotEmpty == true ? vessel!.images.first : null;
-    final vesselName = vessel?.name ?? 'MV MAMAELIZABET1';
-    final vesselPrice = vessel?.dailyRate != null && vessel!.dailyRate!.isNotEmpty 
-        ? '₦${vessel.dailyRate} / day' 
-        : 'Price on Request';
-    final vesselStatus = vessel?.status ?? 'IN STOCK';
+    final equipment = widget.equipment;
+    final isVessel = vessel != null;
+
+    final name = vessel?.name ?? equipment?.name ?? 'Item Detail';
+    final category = vessel?.type ?? equipment?.category ?? (isVessel ? 'VESSEL' : 'EQUIPMENT');
+    final images = vessel?.images.isNotEmpty == true
+        ? vessel!.images
+        : (equipment?.images.isNotEmpty == true ? equipment!.images : <String>[]);
+
+    final String? currentImageUrl = (images.isNotEmpty && _selectedImageIndex < images.length)
+        ? images[_selectedImageIndex]
+        : (images.isNotEmpty ? images.first : null);
+
+    final String price = (vessel?.dailyRate != null && vessel!.dailyRate!.isNotEmpty)
+        ? '₦${vessel.dailyRate} / day'
+        : ((equipment?.dailyRate != null && equipment!.dailyRate!.isNotEmpty)
+            ? '₦${equipment.dailyRate} / day'
+            : 'Price on Request');
+
+    final String status = vessel?.status ?? equipment?.status ?? 'AVAILABLE';
+    final String? condition = vessel?.condition ?? equipment?.condition;
+    final String? details = vessel?.details ?? equipment?.details;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
@@ -57,79 +109,150 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               width: double.infinity,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: AppTheme.backgroundColor,
+                color: const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFF1F5F9)),
               ),
-              child: vesselImage != null
+              child: currentImageUrl != null && currentImageUrl.isNotEmpty
                   ? Image.network(
-                      vesselImage,
+                      currentImageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Image.asset(
-                        'assets/images/vessel_1.png',
-                        fit: BoxFit.cover,
-                      ),
+                      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(height: 350, isVessel: isVessel),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      },
                     )
-                  : Image.asset(
-                      'assets/images/vessel_1.png',
-                      fit: BoxFit.cover,
-                    ),
+                  : _buildPlaceholder(height: 350, isVessel: isVessel),
             ),
-            const SizedBox(height: 16),
             
-            // Thumbnails
-            SizedBox(
-              height: 60,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildThumbnail(isSelected: true),
-                  _buildThumbnail(),
-                  _buildThumbnail(),
-                ],
+            // Image Thumbnails Gallery
+            if (images.length > 1) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 64,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: images.length,
+                  itemBuilder: (context, index) {
+                    final isSelected = _selectedImageIndex == index;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedImageIndex = index),
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        margin: const EdgeInsets.only(right: 12),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isSelected ? AppTheme.primaryColor : const Color(0xFFCBD5E1),
+                            width: isSelected ? 2.5 : 1,
+                          ),
+                        ),
+                        child: Image.network(
+                          images[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: const Color(0xFFF1F5F9),
+                            child: const Icon(Icons.image_outlined, size: 22, color: Color(0xFF94A3B8)),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
+            ],
             
             const SizedBox(height: 24),
             
             // Product Info
-            const Text(
-              'ELITE SERIES',
-              style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.2),
+            Text(
+              category.toUpperCase(),
+              style: const TextStyle(
+                color: AppTheme.primaryColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                letterSpacing: 1.2,
+              ),
             ),
             const SizedBox(height: 8),
-            Text(vesselName, style: textTheme.displayLarge?.copyWith(fontSize: 28)),
+            Text(name, style: textTheme.displayLarge?.copyWith(fontSize: 26)),
             const SizedBox(height: 12),
             Row(
               children: [
                 Text(
-                  vesselPrice,
+                  price,
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
                 ),
                 const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: status.toUpperCase() == 'AVAILABLE'
+                        ? const Color(0xFFECFDF5)
+                        : const Color(0xFFFFFBEB),
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: status.toUpperCase() == 'AVAILABLE'
+                          ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                          : const Color(0xFFFFB800).withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
-                    vesselStatus.toUpperCase(),
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.textSecondaryColor),
+                    status.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: status.toUpperCase() == 'AVAILABLE'
+                          ? const Color(0xFF059669)
+                          : const Color(0xFFD97706),
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Text(
-              vessel?.condition != null 
-                  ? 'Condition: ${vessel!.condition}. A high-performance offshore vessel optimized for logistics and transport.'
-                  : 'A high-performance utility vessel/crew boat optimized for offshore logistics. Featuring our proprietary specification engine for corporate fleet branding.',
-              style: const TextStyle(color: AppTheme.textSecondaryColor, height: 1.5),
-            ),
+            
+            // Details / Description
+            if (details != null && details.isNotEmpty) ...[
+              Text(
+                details,
+                style: const TextStyle(color: AppTheme.textSecondaryColor, height: 1.6, fontSize: 14),
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (condition != null && condition.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.verified_outlined, size: 18, color: AppTheme.primaryColor),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Condition: $condition',
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.primaryColor),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             
             const SizedBox(height: 32),
             
-            // Specification Engine
+            // Specification Engine / Customization
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -158,19 +281,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text('ENGINE CONFIGURATION', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: AppTheme.textSecondaryColor)),
+                  const Text('CONFIGURATION', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: AppTheme.textSecondaryColor)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      _buildToggleButton('Diesel', isSelected: selectedFont == 'Diesel'),
+                      _buildToggleButton('Diesel', isSelected: selectedConfig == 'Diesel'),
                       const SizedBox(width: 8),
-                      _buildToggleButton('Hybrid', isSelected: selectedFont == 'Hybrid'),
+                      _buildToggleButton('Hybrid', isSelected: selectedConfig == 'Hybrid'),
                       const SizedBox(width: 8),
-                      _buildToggleButton('Electric', isSelected: selectedFont == 'Electric'),
+                      _buildToggleButton('Electric', isSelected: selectedConfig == 'Electric'),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  const Text('HULL COATING COLOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: AppTheme.textSecondaryColor)),
+                  const Text('COATING COLOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: AppTheme.textSecondaryColor)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -186,67 +309,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             
             const SizedBox(height: 32),
             
-            // Live Preview
-            const Text('LIVE PREVIEW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.textSecondaryColor)),
-            const SizedBox(height: 8),
-            Container(
-              height: 180,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(16),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/logo.png'), // Placeholder for preview
-                  fit: BoxFit.contain,
-                  opacity: 0.5,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  const Center(
-                    child: Text(
-                      'MUSK LOGISTICS',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20, letterSpacing: 4),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.visibility_rounded, size: 14, color: Colors.black),
-                          SizedBox(width: 4),
-                          Text('LIVE PREVIEW', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 32),
-            
             // Feature Cards
-            _buildFeatureTile(Icons.water_drop_outlined, 'ABS Certified Hull', 'Certified for all-weather offshore operations.'),
+            _buildFeatureTile(Icons.water_drop_outlined, 'ABS Certified', 'Certified for all-weather offshore operations.'),
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildFeatureTile(Icons.speed_rounded, 'Eco-Mode Speed', 'Optimized for fuel efficiency.')),
+                Expanded(child: _buildFeatureTile(Icons.speed_rounded, 'Eco-Mode Support', 'Optimized for fuel and power efficiency.')),
                 const SizedBox(width: 16),
-                Expanded(child: _buildFeatureTile(Icons.security_rounded, 'Fleet Tracking', 'Real-time GPS tracking.')),
+                Expanded(child: _buildFeatureTile(Icons.security_rounded, 'Fleet Tracking', 'Real-time GPS tracking & logistics.')),
               ],
             ),
             
-            const SizedBox(height: 120),
+            const SizedBox(height: 100),
           ],
         ),
       ),
       bottomSheet: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
@@ -276,18 +355,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                      final itemId = vessel?.id ?? equipment?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
                       cartProvider.addItem(CartItem(
-                        id: 'dummy_vessel_1',
-                        name: 'MV MAMAELIZABET1',
-                        info: 'Lease Duration: 6 Months',
-                        status: 'Excellent Condition',
-                        type: 'vessel',
+                        id: itemId,
+                        name: name,
+                        info: condition != null ? 'Condition: $condition' : 'Lease Request',
+                        status: status,
+                        type: isVessel ? 'vessel' : 'equipment',
                       ));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Added to Enquiry Cart!'),
+                        SnackBar(
+                          content: Text('Added "$name" to Enquiry Cart!'),
                           backgroundColor: AppTheme.primaryColor,
-                          duration: Duration(seconds: 2),
+                          duration: const Duration(seconds: 2),
                         ),
                       );
                     },
@@ -308,34 +388,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildThumbnail({bool isSelected = false}) {
-    return Container(
-      width: 60,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.backgroundColor,
-        borderRadius: BorderRadius.circular(8),
-        border: isSelected ? Border.all(color: AppTheme.primaryColor, width: 2) : null,
-      ),
-      child: const Icon(Icons.directions_boat_filled_rounded, color: Color(0xFFCBD5E1), size: 30),
-    );
-  }
-
   Widget _buildToggleButton(String label, {bool isSelected = false}) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isSelected ? AppTheme.primaryColor : const Color(0xFFE2E8F0)),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
+      child: GestureDetector(
+        onTap: () => setState(() => selectedConfig = label),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: isSelected ? AppTheme.primaryColor : const Color(0xFFE2E8F0)),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondaryColor,
+              ),
             ),
           ),
         ),

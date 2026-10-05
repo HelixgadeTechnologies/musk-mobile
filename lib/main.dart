@@ -121,6 +121,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductProvider>().fetchVessels();
+      context.read<ProductProvider>().fetchEquipment();
     });
   }
 
@@ -170,7 +171,10 @@ class _HomePageState extends State<HomePage> {
       body: RefreshIndicator(
         color: AppTheme.primaryColor,
         onRefresh: () async {
-          await context.read<ProductProvider>().fetchVessels(forceRefresh: true);
+          await Future.wait([
+            context.read<ProductProvider>().fetchVessels(forceRefresh: true),
+            context.read<ProductProvider>().fetchEquipment(forceRefresh: true),
+          ]);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -194,7 +198,8 @@ class _HomePageState extends State<HomePage> {
               // Hero Banner
               Container(
                 margin: const EdgeInsets.all(16),
-                height: 180,
+                padding: const EdgeInsets.all(24),
+                constraints: const BoxConstraints(minHeight: 180),
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
@@ -204,32 +209,25 @@ class _HomePageState extends State<HomePage> {
                     end: Alignment.bottomRight,
                   ),
                 ),
-                child: Stack(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Positioned(
-                      left: 24,
-                      top: 24,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('LIMITED EDITION', style: TextStyle(color: Color(0xFFFFB800), fontWeight: FontWeight.bold, fontSize: 12)),
-                          const SizedBox(height: 8),
-                          const Text('Premium Fleet\nOffshore Deals', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24)),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: 160,
-                            child: ElevatedButton(
-                              onPressed: widget.onNavigateToCategories,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFFB800),
-                                foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                minimumSize: const Size(0, 40),
-                              ),
-                              child: const Text('EXPLORE FLEET', style: TextStyle(fontWeight: FontWeight.bold)),
-                            ),
-                          ),
-                        ],
+                    const Text('LIMITED EDITION', style: TextStyle(color: Color(0xFFFFB800), fontWeight: FontWeight.bold, fontSize: 12)),
+                    const SizedBox(height: 8),
+                    const Text('Premium Fleet\nOffshore Deals', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24)),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: 160,
+                      child: ElevatedButton(
+                        onPressed: widget.onNavigateToCategories,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFB800),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          minimumSize: const Size(0, 40),
+                        ),
+                        child: const Text('EXPLORE FLEET', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -238,7 +236,7 @@ class _HomePageState extends State<HomePage> {
 
               // Categories
               SizedBox(
-                height: 100,
+                height: 110,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -258,21 +256,27 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'OFFSHORE FLEET',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryColor,
-                            letterSpacing: 1.2,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'OFFSHORE FLEET',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryColor,
+                              letterSpacing: 1.2,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text('Available Vessels', style: textTheme.displayMedium?.copyWith(fontSize: 18)),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            'Available Vessels',
+                            style: textTheme.displayMedium?.copyWith(fontSize: 18),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
                     TextButton(
                       onPressed: widget.onNavigateToCategories,
@@ -339,7 +343,7 @@ class _HomePageState extends State<HomePage> {
                   }
 
                   return SizedBox(
-                    height: 250,
+                    height: 260,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -364,32 +368,67 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         children: [
-                          const Icon(Icons.flash_on_rounded, color: Colors.white),
+                          const Icon(Icons.flash_on_rounded, color: Colors.white, size: 20),
+                          const SizedBox(width: 6),
+                          const Expanded(
+                            child: Text(
+                              'FLASH DEALS',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           const SizedBox(width: 8),
-                          const Text('FLASH DEALS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                          const Spacer(),
-                          const Text('ENDS IN:', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                          const SizedBox(width: 8),
-                          _buildTimerBox('04'),
-                          const Text(' : ', style: TextStyle(color: Colors.white)),
-                          _buildTimerBox('12'),
-                          const Text(' : ', style: TextStyle(color: Colors.white)),
-                          _buildTimerBox('59'),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('ENDS IN: ', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600)),
+                                _buildTimerBox('04'),
+                                const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                _buildTimerBox('12'),
+                                const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                _buildTimerBox('59'),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-                    SizedBox(
-                      height: 220,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        children: [
-                          _buildFlashCard(context, 'Hydraulic Pump', '-25%', 0.7, 'assets/images/engine_1.png'),
-                          _buildFlashCard(context, 'Main Engine X1', '-40%', 0.3, 'assets/images/engine_1.png'),
-                          _buildFlashCard(context, 'Life Raft', '-25%', 0.9, 'assets/images/safety_1.png'),
-                        ],
-                      ),
+                    Consumer<ProductProvider>(
+                      builder: (context, productProvider, child) {
+                        final equipmentList = productProvider.equipment;
+                        if (equipmentList.isEmpty) {
+                          if (productProvider.isLoadingEquipment) {
+                            return const SizedBox(
+                              height: 220,
+                              child: Center(
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              ),
+                            );
+                          }
+                          return const SizedBox(
+                            height: 60,
+                            child: Center(
+                              child: Text('Check back soon for flash deals.', style: TextStyle(color: Colors.white70)),
+                            ),
+                          );
+                        }
+
+                        return SizedBox(
+                          height: 230,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: equipmentList.length > 8 ? 8 : equipmentList.length,
+                            itemBuilder: (context, index) {
+                              final equip = equipmentList[index];
+                              return _buildFlashCard(context, equip);
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -403,7 +442,13 @@ class _HomePageState extends State<HomePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Recommended for You', style: textTheme.displayMedium?.copyWith(fontSize: 18)),
+                        Expanded(
+                          child: Text(
+                            'Recommended for You',
+                            style: textTheme.displayMedium?.copyWith(fontSize: 18),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                         TextButton(
                           onPressed: widget.onNavigateToCategories,
                           child: const Text('VIEW ALL', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
@@ -414,35 +459,48 @@ class _HomePageState extends State<HomePage> {
                     Consumer<ProductProvider>(
                       builder: (context, productProvider, child) {
                         final vessels = productProvider.vessels;
-                        if (vessels.isNotEmpty) {
-                          return GridView.builder(
-                            crossAxisCount: 2,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 0.65,
-                            itemCount: vessels.length > 4 ? 4 : vessels.length,
-                            itemBuilder: (context, index) {
-                              final vessel = vessels[index];
-                              return _buildDynamicRecommendedCard(context, vessel);
-                            },
+                        final equipment = productProvider.equipment;
+
+                        if (vessels.isEmpty && equipment.isEmpty) {
+                          if (productProvider.isLoadingVessels || productProvider.isLoadingEquipment) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 32),
+                              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                            );
+                          }
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24),
+                            child: Center(
+                              child: Text('No recommendations available currently.', style: TextStyle(color: AppTheme.textSecondaryColor)),
+                            ),
                           );
                         }
 
-                        return GridView.count(
-                          crossAxisCount: 2,
+                        final List<dynamic> recommendedItems = [];
+                        recommendedItems.addAll(vessels.take(2));
+                        recommendedItems.addAll(equipment.take(4 - recommendedItems.length));
+                        if (recommendedItems.isEmpty && vessels.isNotEmpty) {
+                          recommendedItems.addAll(vessels.take(4));
+                        }
+
+                        return GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          mainAxisSpacing: 16,
-                          crossAxisSpacing: 16,
-                          childAspectRatio: 0.65,
-                          children: [
-                            _buildRecommendedCard(context, 'MV MAMAELIZABET1', 'VESSELS', 'assets/images/vessel_1.png'),
-                            _buildRecommendedCard(context, 'Explorer Utility', 'VESSELS', 'assets/images/vessel_1.png'),
-                            _buildRecommendedCard(context, 'Marine Engine', 'EQUIPMENT', 'assets/images/engine_1.png'),
-                            _buildRecommendedCard(context, 'Diving Kit Pro', 'SAFETY', 'assets/images/safety_1.png'),
-                          ],
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
+                            childAspectRatio: 0.63,
+                          ),
+                          itemCount: recommendedItems.length,
+                          itemBuilder: (context, index) {
+                            final item = recommendedItems[index];
+                            return _buildDynamicRecommendedCard(
+                              context,
+                              vessel: item is Vessel ? item : null,
+                              equipment: item is Equipment ? item : null,
+                            );
+                          },
                         );
                       },
                     ),
@@ -525,7 +583,7 @@ class _HomePageState extends State<HomePage> {
             Stack(
               children: [
                 Container(
-                  height: 120,
+                  height: 115,
                   width: double.infinity,
                   decoration: const BoxDecoration(
                     color: Color(0xFFF8FAFC),
@@ -536,14 +594,9 @@ class _HomePageState extends State<HomePage> {
                       ? Image.network(
                           imageUrl,
                           width: double.infinity,
-                          height: 120,
+                          height: 115,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Image.asset(
-                            'assets/images/vessel_1.png',
-                            width: double.infinity,
-                            height: 120,
-                            fit: BoxFit.cover,
-                          ),
+                          errorBuilder: (context, error, stackTrace) => _buildPlaceholderCard(isVessel: true),
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return const Center(
@@ -555,12 +608,7 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         )
-                      : Image.asset(
-                          'assets/images/vessel_1.png',
-                          width: double.infinity,
-                          height: 120,
-                          fit: BoxFit.cover,
-                        ),
+                      : _buildPlaceholderCard(isVessel: true),
                 ),
                 Positioned(
                   top: 8,
@@ -609,6 +657,8 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     vessel.type.isNotEmpty ? vessel.type.toUpperCase() : 'VESSELS',
                     style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -652,17 +702,30 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildDynamicRecommendedCard(BuildContext context, Vessel vessel) {
-    final imageUrl = vessel.images.isNotEmpty ? vessel.images.first : null;
-    final rate = vessel.dailyRate != null && vessel.dailyRate!.isNotEmpty
-        ? '₦${vessel.dailyRate}'
-        : 'Inquire';
+  Widget _buildDynamicRecommendedCard(
+    BuildContext context, {
+    Vessel? vessel,
+    Equipment? equipment,
+  }) {
+    final isVessel = vessel != null;
+    final name = vessel?.name ?? equipment?.name ?? '';
+    final category = vessel?.type ?? equipment?.category ?? (isVessel ? 'VESSELS' : 'EQUIPMENT');
+    final images = vessel?.images ?? equipment?.images ?? [];
+    final imageUrl = images.isNotEmpty ? images.first : null;
+    final status = vessel?.status ?? equipment?.status ?? 'AVAILABLE';
+    final rate = (vessel?.dailyRate != null && vessel!.dailyRate!.isNotEmpty)
+        ? '₦${vessel.dailyRate} / day'
+        : ((equipment?.dailyRate != null && equipment!.dailyRate!.isNotEmpty)
+            ? '₦${equipment.dailyRate} / day'
+            : 'Contact for Price');
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProductDetailScreen(vessel: vessel)),
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(vessel: vessel, equipment: equipment),
+          ),
         );
       },
       child: Container(
@@ -670,69 +733,82 @@ class _HomePageState extends State<HomePage> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFF1F5F9)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                Container(
-                  height: 140,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Container(
+                      color: const Color(0xFFF8FAFC),
+                      child: imageUrl != null && imageUrl.isNotEmpty
+                          ? Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => _buildPlaceholderCard(isVessel: isVessel),
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)));
+                              },
+                            )
+                          : _buildPlaceholderCard(isVessel: isVessel),
+                    ),
                   ),
-                  clipBehavior: Clip.antiAlias,
-                  child: imageUrl != null && imageUrl.isNotEmpty
-                      ? Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Image.asset(
-                            'assets/images/vessel_1.png',
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Image.asset(
-                          'assets/images/vessel_1.png',
-                          fit: BoxFit.cover,
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: status.toUpperCase() == 'AVAILABLE'
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFFFB800),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        status.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: status.toUpperCase() == 'AVAILABLE' ? Colors.white : Colors.black,
                         ),
-                ),
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.85),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      vessel.status?.toUpperCase() ?? 'VESSEL',
-                      style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
                     ),
                   ),
-                ),
-                const Positioned(top: 8, right: 8, child: Icon(Icons.favorite_border_rounded, size: 20, color: Color(0xFFCBD5E1))),
-              ],
+                  const Positioned(top: 8, right: 8, child: Icon(Icons.favorite_border_rounded, size: 20, color: Color(0xFFCBD5E1))),
+                ],
+              ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    vessel.type.isNotEmpty ? vessel.type.toUpperCase() : 'VESSELS',
-                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold),
+                    category.toUpperCase(),
+                    style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    vessel.name,
+                    name,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -746,8 +822,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Container(
                         padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(8)),
-                        child: const Icon(Icons.mail_outline_rounded, size: 16, color: Colors.black),
+                        decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(6)),
+                        child: const Icon(Icons.mail_outline_rounded, size: 14, color: Colors.black),
                       ),
                     ],
                   ),
@@ -788,27 +864,48 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildFlashCard(BuildContext context, String name, String discount, double stock, String imagePath) {
+  Widget _buildFlashCard(BuildContext context, Equipment equipment) {
+    final imageUrl = equipment.images.isNotEmpty ? equipment.images.first : null;
+    final rate = (equipment.dailyRate != null && equipment.dailyRate!.isNotEmpty)
+        ? '₦${equipment.dailyRate} / day'
+        : 'Contact for Price';
+
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductDetailScreen()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProductDetailScreen(equipment: equipment)),
+        );
       },
       child: Container(
         width: 160,
         margin: const EdgeInsets.only(right: 16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Stack(
               children: [
                 Container(
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
-                  ),
+                  height: 95,
+                  width: double.infinity,
+                  color: const Color(0xFFF1F5F9),
+                  child: imageUrl != null && imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _buildPlaceholderCard(isVessel: false),
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)));
+                          },
+                        )
+                      : _buildPlaceholderCard(isVessel: false),
                 ),
                 Positioned(
                   top: 8,
@@ -816,7 +913,7 @@ class _HomePageState extends State<HomePage> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(4)),
-                    child: Text(discount, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                    child: const Text('PROMO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black)),
                   ),
                 ),
               ],
@@ -826,13 +923,13 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(equipment.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  const Text('Contact for Price', style: TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.w500, fontSize: 11)),
+                  Text(rate, style: const TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.w600, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 8),
-                  LinearProgressIndicator(value: stock, backgroundColor: const Color(0xFFF1F5F9), color: const Color(0xFFFFB800), minHeight: 4),
+                  const LinearProgressIndicator(value: 0.7, backgroundColor: Color(0xFFF1F5F9), color: Color(0xFFFFB800), minHeight: 4),
                   const SizedBox(height: 4),
-                  Text('${(stock * 20).toInt()} items left', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 8)),
+                  Text(equipment.status ?? 'Available', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 8), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
@@ -842,53 +939,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildRecommendedCard(BuildContext context, String name, String category, String imagePath) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductDetailScreen()));
-      },
-      child: Container(
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFF1F5F9))),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                Container(
-                  height: 140,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
-                  ),
-                ),
-                const Positioned(top: 8, right: 8, child: Icon(Icons.favorite_border_rounded, size: 20, color: Color(0xFFCBD5E1))),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(category, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Inquire', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 12)),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(8)),
-                        child: const Icon(Icons.mail_outline_rounded, size: 16, color: Colors.black),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+  Widget _buildPlaceholderCard({required bool isVessel}) {
+    return Container(
+      color: const Color(0xFFF8FAFC),
+      child: Center(
+        child: Icon(
+          isVessel ? Icons.directions_boat_rounded : Icons.precision_manufacturing_rounded,
+          color: const Color(0xFFCBD5E1),
+          size: 32,
         ),
       ),
     );
