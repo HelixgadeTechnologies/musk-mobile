@@ -36,6 +36,20 @@ class Vessel {
       details: json['details']?.toString(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'type': type,
+      'status': status,
+      'condition': condition,
+      'dailyRate': dailyRate,
+      'images': images,
+      'yearBuilt': yearBuilt,
+      'details': details,
+    };
+  }
 }
 
 class Equipment {
@@ -73,6 +87,20 @@ class Equipment {
       details: json['details']?.toString(),
       yearManufactured: json['yearManufactured']?.toString(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'category': category,
+      'status': status,
+      'condition': condition,
+      'dailyRate': dailyRate,
+      'images': images,
+      'details': details,
+      'yearManufactured': yearManufactured,
+    };
   }
 }
 

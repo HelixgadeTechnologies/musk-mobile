@@ -4,11 +4,13 @@ import 'package:musk_mover/screens/splash_screen.dart';
 import 'package:musk_mover/screens/marketplace_screen.dart';
 import 'package:musk_mover/screens/profile_screen.dart';
 import 'package:musk_mover/screens/cart_screen.dart';
+import 'package:musk_mover/screens/saved_screen.dart';
 import 'package:musk_mover/screens/product_detail_screen.dart';
 import 'package:musk_mover/models/product_model.dart';
 import 'package:provider/provider.dart';
 import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/providers/cart_provider.dart';
+import 'package:musk_mover/providers/saved_provider.dart';
 import 'package:musk_mover/providers/product_provider.dart';
 
 void main() {
@@ -18,6 +20,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => SavedProvider()),
       ],
       child: const MuskMoverApp(),
     ),
@@ -66,7 +69,16 @@ class _MainScreenState extends State<MainScreen> {
       ),
       const RepaintBoundary(child: MarketplaceScreen(key: PageStorageKey('marketplace'))),
       const RepaintBoundary(child: CartScreen(key: PageStorageKey('cart'))),
-      const RepaintBoundary(child: Center(child: Text('Saved Items'))),
+      RepaintBoundary(
+        child: SavedScreen(
+          key: const PageStorageKey('saved'),
+          onExplore: () {
+            setState(() {
+              _currentIndex = 1;
+            });
+          },
+        ),
+      ),
       const RepaintBoundary(child: ProfileScreen(key: PageStorageKey('profile'))),
     ];
   }
@@ -90,18 +102,44 @@ class _MainScreenState extends State<MainScreen> {
         type: BottomNavigationBarType.fixed,
         selectedFontSize: 12,
         unselectedFontSize: 12,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home_filled), label: 'HOME'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'CATEGORIES'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), activeIcon: Icon(Icons.shopping_cart_rounded), label: 'CART'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_border_rounded), activeIcon: Icon(Icons.favorite_rounded), label: 'SAVED'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), activeIcon: Icon(Icons.person_rounded), label: 'ACCOUNT'),
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home_filled), label: 'HOME'),
+          const BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'CATEGORIES'),
+          const BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), activeIcon: Icon(Icons.shopping_cart_rounded), label: 'CART'),
+          BottomNavigationBarItem(
+            icon: Consumer<SavedProvider>(
+              builder: (context, saved, _) {
+                if (saved.itemCount == 0) {
+                  return const Icon(Icons.favorite_border_rounded);
+                }
+                return Badge(
+                  label: Text('${saved.itemCount}'),
+                  backgroundColor: AppTheme.secondaryColor,
+                  child: const Icon(Icons.favorite_border_rounded),
+                );
+              },
+            ),
+            activeIcon: Consumer<SavedProvider>(
+              builder: (context, saved, _) {
+                if (saved.itemCount == 0) {
+                  return const Icon(Icons.favorite_rounded);
+                }
+                return Badge(
+                  label: Text('${saved.itemCount}'),
+                  backgroundColor: AppTheme.secondaryColor,
+                  child: const Icon(Icons.favorite_rounded),
+                );
+              },
+            ),
+            label: 'SAVED',
+          ),
+          const BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), activeIcon: Icon(Icons.person_rounded), label: 'ACCOUNT'),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
-        backgroundColor: const Color(0xFFFFB800), // Yellow as per UI
-        child: const Icon(Icons.support_agent_rounded, color: Colors.black),
+        backgroundColor: AppTheme.logoOrange,
+        child: const Icon(Icons.support_agent_rounded, color: Colors.white),
       ),
     );
   }
@@ -153,11 +191,11 @@ class _HomePageState extends State<HomePage> {
                       top: 8,
                       child: Container(
                         padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(color: Color(0xFFFFB800), shape: BoxShape.circle),
+                        decoration: const BoxDecoration(color: AppTheme.logoOrange, shape: BoxShape.circle),
                         constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
                         child: Text(
                           '${cartProvider.itemCount}',
-                          style: const TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -213,7 +251,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('LIMITED EDITION', style: TextStyle(color: Color(0xFFFFB800), fontWeight: FontWeight.bold, fontSize: 12)),
+                    const Text('LIMITED EDITION', style: TextStyle(color: AppTheme.logoOrange, fontWeight: FontWeight.bold, fontSize: 12)),
                     const SizedBox(height: 8),
                     const Text('Premium Fleet\nOffshore Deals', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24)),
                     const SizedBox(height: 16),
@@ -222,8 +260,8 @@ class _HomePageState extends State<HomePage> {
                       child: ElevatedButton(
                         onPressed: widget.onNavigateToCategories,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFB800),
-                          foregroundColor: Colors.black,
+                          backgroundColor: AppTheme.logoOrange,
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           minimumSize: const Size(0, 40),
                         ),
@@ -618,15 +656,15 @@ class _HomePageState extends State<HomePage> {
                     decoration: BoxDecoration(
                       color: status.toUpperCase() == 'AVAILABLE'
                           ? const Color(0xFF10B981)
-                          : const Color(0xFFFFB800),
+                          : AppTheme.logoOrange,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       status.toUpperCase(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 8,
                         fontWeight: FontWeight.bold,
-                        color: status.toUpperCase() == 'AVAILABLE' ? Colors.white : Colors.black,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -686,10 +724,10 @@ class _HomePageState extends State<HomePage> {
                       Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFB800),
+                          color: AppTheme.logoOrange,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Icon(Icons.arrow_forward_rounded, size: 14, color: Colors.black),
+                        child: const Icon(Icons.arrow_forward_rounded, size: 14, color: Colors.white),
                       ),
                     ],
                   ),
@@ -772,20 +810,46 @@ class _HomePageState extends State<HomePage> {
                       decoration: BoxDecoration(
                         color: status.toUpperCase() == 'AVAILABLE'
                             ? const Color(0xFF10B981)
-                            : const Color(0xFFFFB800),
+                            : AppTheme.logoOrange,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         status.toUpperCase(),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 8,
                           fontWeight: FontWeight.bold,
-                          color: status.toUpperCase() == 'AVAILABLE' ? Colors.white : Colors.black,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-                  const Positioned(top: 8, right: 8, child: Icon(Icons.favorite_border_rounded, size: 20, color: Color(0xFFCBD5E1))),
+                  Consumer<SavedProvider>(
+                    builder: (context, savedProvider, _) {
+                      final itemId = vessel?.id ?? equipment?.id ?? '';
+                      final isSaved = savedProvider.isSaved(itemId);
+                      return Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () {
+                            savedProvider.toggleSaved(vessel: vessel, equipment: equipment);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isSaved ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              size: 16,
+                              color: isSaved ? const Color(0xFFEF4444) : const Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -822,8 +886,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Container(
                         padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(6)),
-                        child: const Icon(Icons.mail_outline_rounded, size: 14, color: Colors.black),
+                        decoration: BoxDecoration(color: AppTheme.logoOrange, borderRadius: BorderRadius.circular(6)),
+                        child: const Icon(Icons.mail_outline_rounded, size: 14, color: Colors.white),
                       ),
                     ],
                   ),
@@ -912,8 +976,8 @@ class _HomePageState extends State<HomePage> {
                   left: 8,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(4)),
-                    child: const Text('PROMO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black)),
+                    decoration: BoxDecoration(color: AppTheme.logoOrange, borderRadius: BorderRadius.circular(4)),
+                    child: const Text('PROMO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
               ],
@@ -927,7 +991,7 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 4),
                   Text(rate, style: const TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.w600, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 8),
-                  const LinearProgressIndicator(value: 0.7, backgroundColor: Color(0xFFF1F5F9), color: Color(0xFFFFB800), minHeight: 4),
+                  const LinearProgressIndicator(value: 0.7, backgroundColor: Color(0xFFF1F5F9), color: AppTheme.logoOrange, minHeight: 4),
                   const SizedBox(height: 4),
                   Text(equipment.status ?? 'Available', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 8), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],

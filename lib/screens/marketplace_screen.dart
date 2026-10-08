@@ -316,8 +316,8 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
           ElevatedButton(
             onPressed: () {},
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFB800),
-              foregroundColor: Colors.black,
+              backgroundColor: AppTheme.logoOrange,
+              foregroundColor: Colors.white,
               minimumSize: const Size(0, 40),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -397,15 +397,15 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                         decoration: BoxDecoration(
                           color: badge.toUpperCase() == 'AVAILABLE'
                               ? const Color(0xFF10B981)
-                              : const Color(0xFFFFB800),
+                              : AppTheme.logoOrange,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           badge.toUpperCase(),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 8,
                             fontWeight: FontWeight.bold,
-                            color: badge.toUpperCase() == 'AVAILABLE' ? Colors.white : Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                       ),

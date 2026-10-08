@@ -3,7 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static const Color primaryColor = Color(0xFF050B20); // Navy Blue
-  static const Color secondaryColor = Color(0xFFFF3B30); // Red
+  static const Color logoOrange = Color(0xFFFF3815); // Vibrant Orange from logo
+  static const Color secondaryColor = Color(0xFFFF3815); // Logo Orange (#FF3815)
   static const Color accentColor = Color(0xFF22C55E); // Green
   static const Color backgroundColor = Color(0xFFF8FAFC); // Slate-50
   static const Color surfaceColor = Colors.white;

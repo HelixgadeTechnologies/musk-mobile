@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:musk_mover/providers/cart_provider.dart';
+import 'package:musk_mover/providers/saved_provider.dart';
+import 'package:musk_mover/screens/saved_screen.dart';
 import 'package:musk_mover/app_theme.dart';
 import 'package:musk_mover/models/product_model.dart';
 
@@ -339,14 +341,62 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: SafeArea(
           child: Row(
             children: [
-              Container(
-                height: 56,
-                width: 56,
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.favorite_border_rounded, color: AppTheme.primaryColor),
+              Consumer<SavedProvider>(
+                builder: (context, savedProvider, _) {
+                  final itemId = vessel?.id ?? equipment?.id ?? '';
+                  final isSaved = savedProvider.isSaved(itemId);
+
+                  return InkWell(
+                    onTap: () {
+                      final nowSaved = savedProvider.toggleSaved(vessel: vessel, equipment: equipment);
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            nowSaved
+                                ? 'Moved "$name" to Saved Items!'
+                                : 'Removed "$name" from Saved Items',
+                          ),
+                          backgroundColor: AppTheme.primaryColor,
+                          duration: const Duration(seconds: 3),
+                          action: nowSaved
+                              ? SnackBarAction(
+                                  label: 'VIEW SAVED',
+                                  textColor: AppTheme.logoOrange,
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const SavedScreen(),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : null,
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      height: 56,
+                      width: 56,
+                      decoration: BoxDecoration(
+                        color: isSaved ? const Color(0xFFFEF2F2) : Colors.white,
+                        border: Border.all(
+                          color: isSaved ? const Color(0xFFEF4444) : const Color(0xFFE2E8F0),
+                          width: isSaved ? 1.5 : 1,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        isSaved ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        color: isSaved ? const Color(0xFFEF4444) : AppTheme.primaryColor,
+                        size: 26,
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(width: 16),
               Expanded(
