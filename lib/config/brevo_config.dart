@@ -31,7 +31,7 @@ class BrevoConfig {
   static String senderName = 'MuskMover Fleet Operations';
 
   /// Internal company email to receive notifications for customer enquiries
-  static String operationsNotificationEmail = 'operations@muskmover.ng';
+  static String operationsNotificationEmail = 'info@muskmover.ng';
 
   /// Checks if credentials have been configured
   static bool get isConfigured =>
