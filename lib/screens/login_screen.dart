@@ -18,6 +18,29 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _rememberMe = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final creds = await authProvider.getSavedCredentials();
+    if (mounted && creds['rememberMe'] == 'true') {
+      setState(() {
+        _rememberMe = true;
+        if (creds['email'] != null && creds['email']!.isNotEmpty) {
+          _emailController.text = creds['email']!;
+        }
+        if (creds['password'] != null && creds['password']!.isNotEmpty) {
+          _passwordController.text = creds['password']!;
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -33,6 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await authProvider.login(
       _emailController.text.trim(),
       _passwordController.text,
+      rememberMe: _rememberMe,
     );
 
     if (!mounted) return;
@@ -138,8 +162,47 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
-                
+                const SizedBox(height: 16),
+
+                // Remember Me for 30 Days Checkbox
+                Row(
+                  children: [
+                    SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: Checkbox(
+                        value: _rememberMe,
+                        activeColor: AppTheme.primaryColor,
+                        checkColor: Colors.white,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        onChanged: (val) {
+                          setState(() {
+                            _rememberMe = val ?? false;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _rememberMe = !_rememberMe;
+                        });
+                      },
+                      child: const Text(
+                        'Remember me for 30 days',
+                        style: TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
+
                 // Login Button
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, _) {

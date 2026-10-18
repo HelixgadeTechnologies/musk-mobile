@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:musk_mover/providers/cart_provider.dart';
 import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/providers/product_provider.dart';
 import 'package:musk_mover/screens/marketplace_screen.dart';
+import 'package:musk_mover/services/brevo_email_service.dart';
 import 'package:musk_mover/app_theme.dart';
 
 class CartScreen extends StatefulWidget {
@@ -153,7 +155,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void _showCheckoutReviewModal(BuildContext context, CartProvider cartProvider, ProductProvider productProvider) {
+  Future<void> _showCheckoutReviewModal(BuildContext context, CartProvider cartProvider, ProductProvider productProvider) async {
     if (cartProvider.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -165,10 +167,50 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final userEmail = authProvider.user?['email']?.toString() ?? '';
-    final emailController = TextEditingController(text: userEmail);
-    final portController = TextEditingController();
+    final prefs = await SharedPreferences.getInstance();
+    final user = authProvider.user;
+
+    // Fetch Company Email (Priority: companyEmail -> contactPersonEmail -> email -> SharedPreferences -> default)
+    String initialCompanyEmail = '';
+    if (authProvider.companyEmail.isNotEmpty) {
+      initialCompanyEmail = authProvider.companyEmail;
+    } else if (user?['companyEmail']?.toString().trim().isNotEmpty == true) {
+      initialCompanyEmail = user!['companyEmail'].toString().trim();
+    } else if (user?['contactPersonEmail']?.toString().trim().isNotEmpty == true) {
+      initialCompanyEmail = user!['contactPersonEmail'].toString().trim();
+    } else if (user?['email']?.toString().trim().isNotEmpty == true) {
+      initialCompanyEmail = user!['email'].toString().trim();
+    } else {
+      initialCompanyEmail = prefs.getString('saved_company_email') ??
+          prefs.getString('saved_login_email') ??
+          'info@musklogistics.com';
+    }
+
+    // Fetch Company Address for Delivery Base (Priority: companyAddress -> address -> deliveryBase -> officeAddress -> SharedPreferences -> default)
+    String initialCompanyAddress = '';
+    if (authProvider.companyAddress.isNotEmpty) {
+      initialCompanyAddress = authProvider.companyAddress;
+    } else if (user?['companyAddress']?.toString().trim().isNotEmpty == true) {
+      initialCompanyAddress = user!['companyAddress'].toString().trim();
+    } else if (user?['address']?.toString().trim().isNotEmpty == true) {
+      initialCompanyAddress = user!['address'].toString().trim();
+    } else if (user?['deliveryBase']?.toString().trim().isNotEmpty == true) {
+      initialCompanyAddress = user!['deliveryBase'].toString().trim();
+    } else if (user?['officeAddress']?.toString().trim().isNotEmpty == true) {
+      initialCompanyAddress = user!['officeAddress'].toString().trim();
+    } else {
+      initialCompanyAddress = prefs.getString('saved_company_address') ??
+          prefs.getString('saved_delivery_base') ??
+          'Federal Ocean Terminal, Onne Port, Rivers State';
+    }
+
+    final emailController = TextEditingController(text: initialCompanyEmail);
+    final portController = TextEditingController(text: initialCompanyAddress);
     final noteController = TextEditingController();
+
+    bool isSubmitting = false;
+
+    if (!context.mounted) return;
 
     showModalBottomSheet(
       context: context,
@@ -382,32 +424,66 @@ class _CartScreenState extends State<CartScreen> {
                           );
                         }),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Recipient & Location Details',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Recipient & Location Details',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.edit_note_rounded, size: 14, color: AppTheme.primaryColor),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Editable',
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        // Email input
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Pre-filled with your company profile details. Tap any field to edit before confirming.',
+                          style: TextStyle(fontSize: 12, color: AppTheme.textSecondaryColor),
+                        ),
+                        const SizedBox(height: 14),
+                        // Email input (Pre-filled with company email, fully editable)
                         TextField(
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             labelText: 'Company / Contact Email',
                             hintText: 'e.g. operations@marine.com',
-                            prefixIcon: const Icon(Icons.email_outlined, size: 20),
+                            prefixIcon: const Icon(Icons.business_outlined, size: 20),
+                            suffixIcon: const Icon(Icons.edit_outlined, size: 18, color: AppTheme.textSecondaryColor),
+                            helperText: 'Pre-filled company email (tap to edit)',
+                            helperStyle: const TextStyle(fontSize: 11, color: AppTheme.textSecondaryColor),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             filled: true,
                             fillColor: const Color(0xFFF8FAFC),
                           ),
                         ),
                         const SizedBox(height: 12),
-                        // Port/Location input
+                        // Delivery Base input (Pre-filled with company address, fully editable)
                         TextField(
                           controller: portController,
                           decoration: InputDecoration(
                             labelText: 'Operating Port / Delivery Base',
                             hintText: 'e.g. Onne Port, Lagos Anchorage',
                             prefixIcon: const Icon(Icons.location_on_outlined, size: 20),
+                            suffixIcon: const Icon(Icons.edit_location_alt_outlined, size: 18, color: AppTheme.textSecondaryColor),
+                            helperText: 'Pre-filled delivery base / company address (tap to edit)',
+                            helperStyle: const TextStyle(fontSize: 11, color: AppTheme.textSecondaryColor),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             filled: true,
                             fillColor: const Color(0xFFF8FAFC),
@@ -449,33 +525,72 @@ class _CartScreenState extends State<CartScreen> {
                         width: double.infinity,
                         height: 54,
                         child: ElevatedButton(
-                          onPressed: () {
-                            final email = emailController.text.trim();
-                            if (email.isEmpty || !email.contains('@')) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Please enter a valid company email address.'),
-                                  backgroundColor: AppTheme.secondaryColor,
-                                ),
-                              );
-                              return;
-                            }
-                            Navigator.pop(bottomSheetContext);
-                            _showEnquirySuccessDialog(context, cartProvider, email);
-                          },
+                          onPressed: isSubmitting
+                              ? null
+                              : () async {
+                                  final email = emailController.text.trim();
+                                  final portLocation = portController.text.trim();
+
+                                  if (email.isEmpty || !email.contains('@')) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Please enter a valid company email address.'),
+                                        backgroundColor: AppTheme.secondaryColor,
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  setSheetState(() {
+                                    isSubmitting = true;
+                                  });
+
+                                  // Update & persist company details so future enquiries reuse the edited preference
+                                  await authProvider.updateCompanyDetails(
+                                    companyEmail: email,
+                                    companyAddress: portLocation,
+                                  );
+
+                                  // Send email via Brevo
+                                  await BrevoEmailService.sendFleetEnquiryEmail(
+                                    customerEmail: email,
+                                    portLocation: portLocation,
+                                    notes: noteController.text.trim(),
+                                    items: cartProvider.items,
+                                    imageResolver: (item) => resolveCartItemImage(item, productProvider),
+                                  );
+
+                                  if (context.mounted) {
+                                    Navigator.pop(bottomSheetContext);
+                                    _showEnquirySuccessDialog(context, cartProvider, email, portLocation);
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryColor,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Confirm & Submit Enquiry', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                              SizedBox(width: 10),
-                              Icon(Icons.send_rounded, size: 18),
-                            ],
-                          ),
+                          child: isSubmitting
+                              ? const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Text('SENDING ENQUIRY...'),
+                                  ],
+                                )
+                              : const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text('Confirm & Submit Enquiry', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                    SizedBox(width: 10),
+                                    Icon(Icons.send_rounded, size: 18),
+                                  ],
+                                ),
                         ),
                       ),
                     ),
@@ -489,7 +604,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void _showEnquirySuccessDialog(BuildContext context, CartProvider cartProvider, String email) {
+  void _showEnquirySuccessDialog(BuildContext context, CartProvider cartProvider, String email, String deliveryBase) {
     final itemCount = cartProvider.itemCount;
     cartProvider.clearCart();
 
@@ -525,7 +640,7 @@ class _CartScreenState extends State<CartScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'We have received your quotation request for $itemCount marine asset(s).\n\nA customized charter quote and specifications sheet will be sent to:\n$email',
+                  'We have received your quotation request for $itemCount marine asset(s).\n\nA customized charter quote and specifications sheet will be sent to:\n$email${deliveryBase.isNotEmpty ? '\n\nDelivery Destination:\n$deliveryBase' : ''}',
                   style: const TextStyle(fontSize: 13, color: AppTheme.textSecondaryColor, height: 1.5),
                   textAlign: TextAlign.center,
                 ),

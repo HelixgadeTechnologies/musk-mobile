@@ -1,5 +1,8 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:musk_mover/app_theme.dart';
+import 'package:musk_mover/screens/otp_verification_screen.dart';
+import 'package:musk_mover/services/brevo_email_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -12,7 +15,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isLoading = false;
-  bool _isSubmitted = false;
 
   @override
   void dispose() {
@@ -23,19 +25,38 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _handleResetPassword() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final email = _emailController.text.trim();
+
     setState(() {
       _isLoading = true;
     });
 
-    // Simulate sending password reset instructions
-    await Future.delayed(const Duration(milliseconds: 900));
+    // Generate 4-digit recovery code
+    final otpCode = (1000 + Random().nextInt(9000)).toString();
+
+    // Send password reset email via Brevo
+    await BrevoEmailService.sendPasswordResetOtp(
+      recipientEmail: email,
+      otpCode: otpCode,
+    );
 
     if (!mounted) return;
 
     setState(() {
       _isLoading = false;
-      _isSubmitted = true;
     });
+
+    // Navigate to 4-digit code verification page
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OtpVerificationScreen(
+          email: email,
+          flowType: OtpFlowType.forgotPassword,
+          initialOtp: otpCode,
+        ),
+      ),
+    );
   }
 
   @override
@@ -56,7 +77,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-          child: _isSubmitted ? _buildSuccessView(textTheme) : _buildFormView(textTheme),
+          child: _buildFormView(textTheme),
         ),
       ),
     );
@@ -82,7 +103,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Enter the email address registered with your account. We will send you instructions to reset your password.',
+            'Enter the email address registered with your account. We will send you a 4-digit verification code to reset your password.',
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: 36),
@@ -118,12 +139,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleResetPassword,
               child: _isLoading
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  ? const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        ),
+                        SizedBox(width: 12),
+                        Text('SENDING CODE...'),
+                      ],
                     )
-                  : const Text('SEND RESET INSTRUCTIONS'),
+                  : const Text('SEND 4-DIGIT CODE'),
             ),
           ),
           const SizedBox(height: 28),
@@ -149,74 +177,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSuccessView(TextTheme textTheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const SizedBox(height: 40),
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: AppTheme.accentColor.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.mark_email_read_outlined,
-            color: AppTheme.accentColor,
-            size: 44,
-          ),
-        ),
-        const SizedBox(height: 28),
-        Text(
-          'Check Your Email',
-          style: textTheme.displayMedium,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 12),
-        RichText(
-          textAlign: TextAlign.center,
-          text: TextSpan(
-            style: textTheme.bodyMedium?.copyWith(height: 1.5),
-            children: [
-              const TextSpan(text: 'We have sent password reset instructions to\n'),
-              TextSpan(
-                text: _emailController.text.trim(),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
-              ),
-              const TextSpan(text: '.\nPlease check your inbox and follow the link.'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 36),
-
-        // Return to login
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('RETURN TO LOG IN'),
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Resend Button
-        TextButton.icon(
-          onPressed: () {
-            setState(() {
-              _isSubmitted = false;
-            });
-          },
-          icon: const Icon(Icons.refresh_rounded, size: 18, color: AppTheme.secondaryColor),
-          label: const Text(
-            'Try another email',
-            style: TextStyle(color: AppTheme.secondaryColor, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
     );
   }
 }

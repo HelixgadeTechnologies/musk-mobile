@@ -30,10 +30,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    await Future.delayed(const Duration(seconds: 3));
-    if (!mounted) return;
-
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // Wait for animation delay while ensuring auth check has completed
+    await Future.delayed(const Duration(seconds: 2));
+    while (authProvider.isLoading) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+    }
+    if (!mounted) return;
     
     if (authProvider.isLoggedIn) {
       Navigator.of(context).pushReplacement(

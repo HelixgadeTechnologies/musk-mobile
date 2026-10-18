@@ -1,9 +1,11 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:musk_mover/app_theme.dart';
-import 'package:musk_mover/main.dart';
 import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/screens/login_screen.dart';
+import 'package:musk_mover/screens/otp_verification_screen.dart';
+import 'package:musk_mover/services/brevo_email_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -15,6 +17,7 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  bool _isSendingOtp = false;
 
   final _contactNameController = TextEditingController();
   final _contactEmailController = TextEditingController();
@@ -24,6 +27,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _industrySectorController = TextEditingController();
   final _companyEmailController = TextEditingController();
   final _companyPhoneController = TextEditingController();
+  final _companyAddressController = TextEditingController();
 
   @override
   void dispose() {
@@ -35,13 +39,23 @@ class _SignupScreenState extends State<SignupScreen> {
     _industrySectorController.dispose();
     _companyEmailController.dispose();
     _companyPhoneController.dispose();
+    _companyAddressController.dispose();
     super.dispose();
   }
 
   Future<void> _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    setState(() {
+      _isSendingOtp = true;
+    });
+
+    final targetEmail = _contactEmailController.text.trim().isNotEmpty
+        ? _contactEmailController.text.trim()
+        : _companyEmailController.text.trim();
+    final targetName = _contactNameController.text.trim().isNotEmpty
+        ? _contactNameController.text.trim()
+        : _companyNameController.text.trim();
 
     final userData = {
       'contactPersonName': _contactNameController.text.trim(),
@@ -52,25 +66,38 @@ class _SignupScreenState extends State<SignupScreen> {
       'industrySector': _industrySectorController.text.trim(),
       'companyEmail': _companyEmailController.text.trim(),
       'companyPhone': _companyPhoneController.text.trim(),
+      'companyAddress': _companyAddressController.text.trim(),
+      'deliveryBase': _companyAddressController.text.trim(),
     };
 
-    final success = await authProvider.register(userData);
+    // Generate 4-digit code
+    final otpCode = (1000 + Random().nextInt(9000)).toString();
+
+    // Send verification email via Brevo
+    await BrevoEmailService.sendRegistrationVerificationOtp(
+      recipientEmail: targetEmail,
+      recipientName: targetName,
+      otpCode: otpCode,
+    );
 
     if (!mounted) return;
 
-    if (success) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const MainScreen()),
-        (route) => false,
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Registration failed. Please try again.'),
-          backgroundColor: AppTheme.secondaryColor,
+    setState(() {
+      _isSendingOtp = false;
+    });
+
+    // Navigate to 4-digit OTP verification screen
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => OtpVerificationScreen(
+          email: targetEmail,
+          name: targetName,
+          flowType: OtpFlowType.registration,
+          initialOtp: otpCode,
+          registrationData: userData,
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -154,20 +181,30 @@ class _SignupScreenState extends State<SignupScreen> {
                 _buildTextField('Company Email Address', Icons.alternate_email_rounded, controller: _companyEmailController, hint: 'company@example.com', keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 16),
                 _buildTextField('Company Phone Number', Icons.phone_rounded, controller: _companyPhoneController, hint: '+234...', keyboardType: TextInputType.phone),
+                const SizedBox(height: 16),
+                _buildTextField('Company Address / Base Location', Icons.location_on_rounded, controller: _companyAddressController, hint: 'e.g. Onne Port Complex, Rivers State'),
                 
                 const SizedBox(height: 40),
                 
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, _) {
+                    final isBusy = _isSendingOtp || authProvider.isLoading;
                     return SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: authProvider.isLoading ? null : _handleSignup,
-                        child: authProvider.isLoading
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        onPressed: isBusy ? null : _handleSignup,
+                        child: isBusy
+                            ? const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Text('SENDING CODE...'),
+                                ],
                               )
                             : const Text('CREATE ACCOUNT'),
                       ),

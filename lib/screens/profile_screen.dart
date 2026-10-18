@@ -19,6 +19,10 @@ class ProfileScreen extends StatelessWidget {
     final industrySector = user?['industrySector'] ?? 'Oil & Gas Services';
     final companyEmail = user?['companyEmail'] ?? 'info@musklogistics.com';
     final companyPhone = user?['companyPhone'] ?? '+234 1 234 5678';
+    final companyAddress = user?['companyAddress'] ??
+        user?['address'] ??
+        user?['deliveryBase'] ??
+        'Federal Ocean Terminal, Onne Port, Rivers State';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -104,6 +108,8 @@ class ProfileScreen extends StatelessWidget {
               _buildRowItem('Company Email', companyEmail),
               _buildDivider(),
               _buildRowItem('Company Phone', companyPhone),
+              _buildDivider(),
+              _buildRowItem('Delivery Base / Address', companyAddress),
             ]),
             
             const SizedBox(height: 24),
