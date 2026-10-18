@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:musk_mover/providers/cart_provider.dart';
 import 'package:musk_mover/providers/saved_provider.dart';
 import 'package:musk_mover/screens/saved_screen.dart';
+import 'package:musk_mover/screens/cart_screen.dart';
 import 'package:musk_mover/app_theme.dart';
 import 'package:musk_mover/models/product_model.dart';
 
@@ -94,6 +95,41 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         title: const Text('MUSKMOVER', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
+          Consumer<CartProvider>(
+            builder: (context, cart, _) => Stack(
+              alignment: Alignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_bag_outlined, color: AppTheme.primaryColor),
+                  tooltip: 'View Cart',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CartScreen()),
+                    );
+                  },
+                ),
+                if (cart.itemCount > 0)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.logoOrange,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                      child: Text(
+                        '${cart.itemCount}',
+                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.tune_rounded, color: AppTheme.primaryColor),
             onPressed: () {},
@@ -406,19 +442,30 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     onPressed: () {
                       final cartProvider = Provider.of<CartProvider>(context, listen: false);
                       final itemId = vessel?.id ?? equipment?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+                      final itemImage = currentImageUrl ?? (images.isNotEmpty ? images.first : null);
                       cartProvider.addItem(CartItem(
                         id: itemId,
                         name: name,
                         info: condition != null ? 'Condition: $condition' : 'Lease Request',
                         status: status,
                         type: isVessel ? 'vessel' : 'equipment',
-                        imageUrl: (vessel?.images.isNotEmpty ?? false) ? vessel!.images.first : (equipment?.images.isNotEmpty ?? false) ? equipment!.images.first : null,
+                        imageUrl: itemImage,
                       ));
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Added "$name" to Enquiry Cart!'),
                           backgroundColor: AppTheme.primaryColor,
-                          duration: const Duration(seconds: 2),
+                          action: SnackBarAction(
+                            label: 'VIEW CART',
+                            textColor: AppTheme.logoOrange,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const CartScreen()),
+                              );
+                            },
+                          ),
+                          duration: const Duration(seconds: 3),
                         ),
                       );
                     },

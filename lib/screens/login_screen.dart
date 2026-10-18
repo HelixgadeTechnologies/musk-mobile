@@ -4,6 +4,7 @@ import 'package:musk_mover/app_theme.dart';
 import 'package:musk_mover/main.dart';
 import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/screens/signup_screen.dart';
+import 'package:musk_mover/screens/forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -108,7 +109,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text('Password', style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                        );
+                      },
                       child: const Text('Forgot Password?', style: TextStyle(color: AppTheme.secondaryColor)),
                     ),
                   ],
