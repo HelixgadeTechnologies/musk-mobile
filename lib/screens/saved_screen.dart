@@ -482,6 +482,7 @@ class _SavedScreenState extends State<SavedScreen> {
                               info: item.condition != null ? 'Condition: ${item.condition}' : 'Lease Request',
                               status: item.status ?? 'AVAILABLE',
                               type: item.type,
+                              imageUrl: (item.vessel?.images.isNotEmpty ?? false) ? item.vessel!.images.first : (item.equipment?.images.isNotEmpty ?? false) ? item.equipment!.images.first : null,
                             ));
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

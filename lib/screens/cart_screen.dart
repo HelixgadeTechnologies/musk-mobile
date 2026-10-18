@@ -223,14 +223,24 @@ class CartScreen extends StatelessWidget {
               Container(
                 width: 80,
                 height: 80,
+                clipBehavior: Clip.hardEdge,
                 decoration: BoxDecoration(
                   color: AppTheme.backgroundColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  item.type == 'vessel' ? Icons.directions_boat_filled_rounded : Icons.engineering_rounded,
-                  color: AppTheme.primaryColor,
-                ),
+                child: item.imageUrl != null && item.imageUrl!.isNotEmpty
+                    ? Image.network(
+                        item.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          item.type == 'vessel' ? Icons.directions_boat_filled_rounded : Icons.engineering_rounded,
+                          color: AppTheme.primaryColor,
+                        ),
+                      )
+                    : Icon(
+                        item.type == 'vessel' ? Icons.directions_boat_filled_rounded : Icons.engineering_rounded,
+                        color: AppTheme.primaryColor,
+                      ),
               ),
               const SizedBox(width: 16),
               Expanded(

@@ -412,6 +412,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         info: condition != null ? 'Condition: $condition' : 'Lease Request',
                         status: status,
                         type: isVessel ? 'vessel' : 'equipment',
+                        imageUrl: (vessel?.images.isNotEmpty ?? false) ? vessel!.images.first : (equipment?.images.isNotEmpty ?? false) ? equipment!.images.first : null,
                       ));
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

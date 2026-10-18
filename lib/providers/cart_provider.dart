@@ -8,6 +8,7 @@ class CartItem {
   final String info;
   final String status;
   final String type; // 'vessel' or 'equipment'
+  final String? imageUrl;
   int quantity;
 
   CartItem({
@@ -16,6 +17,7 @@ class CartItem {
     required this.info,
     required this.status,
     required this.type,
+    this.imageUrl,
     this.quantity = 1,
   });
 
@@ -26,6 +28,7 @@ class CartItem {
       'info': info,
       'status': status,
       'type': type,
+      'imageUrl': imageUrl,
       'quantity': quantity,
     };
   }
@@ -37,6 +40,7 @@ class CartItem {
       info: json['info'],
       status: json['status'],
       type: json['type'],
+      imageUrl: json['imageUrl'],
       quantity: json['quantity'] ?? 1,
     );
   }
