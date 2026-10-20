@@ -35,7 +35,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final otpCode = (1000 + Random().nextInt(9000)).toString();
 
     // Send password reset email via Brevo
-    await BrevoEmailService.sendPasswordResetOtp(
+    final sent = await BrevoEmailService.sendPasswordResetOtp(
       recipientEmail: email,
       otpCode: otpCode,
     );
@@ -45,6 +45,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() {
       _isLoading = false;
     });
+
+    if (!sent) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not send recovery code email. Please check your connection and try resending on the next screen.'),
+          backgroundColor: AppTheme.secondaryColor,
+        ),
+      );
+    }
 
     // Navigate to 4-digit code verification page
     Navigator.push(

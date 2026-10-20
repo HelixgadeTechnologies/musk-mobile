@@ -49,7 +49,12 @@ class BrevoEmailService {
           ..html = htmlContent;
 
         if (bccEmails != null && bccEmails.isNotEmpty) {
-          message.bccRecipients.addAll(bccEmails.map((e) => Address(e)));
+          final sanitizedBcc = bccEmails
+              .where((e) => e.trim().toLowerCase() != toEmail.trim().toLowerCase())
+              .toList();
+          if (sanitizedBcc.isNotEmpty) {
+            message.bccRecipients.addAll(sanitizedBcc.map((e) => Address(e)));
+          }
         }
 
         final report = await send(message, smtpServer);
@@ -84,7 +89,12 @@ class BrevoEmailService {
       };
 
       if (bccEmails != null && bccEmails.isNotEmpty) {
-        payload['bcc'] = bccEmails.map((e) => {'email': e}).toList();
+        final sanitizedBcc = bccEmails
+            .where((e) => e.trim().toLowerCase() != toEmail.trim().toLowerCase())
+            .toList();
+        if (sanitizedBcc.isNotEmpty) {
+          payload['bcc'] = sanitizedBcc.map((e) => {'email': e}).toList();
+        }
       }
 
       final response = await http.post(

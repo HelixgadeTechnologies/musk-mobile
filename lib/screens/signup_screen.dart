@@ -74,7 +74,7 @@ class _SignupScreenState extends State<SignupScreen> {
     final otpCode = (1000 + Random().nextInt(9000)).toString();
 
     // Send verification email via Brevo
-    await BrevoEmailService.sendRegistrationVerificationOtp(
+    final sent = await BrevoEmailService.sendRegistrationVerificationOtp(
       recipientEmail: targetEmail,
       recipientName: targetName,
       otpCode: otpCode,
@@ -85,6 +85,15 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() {
       _isSendingOtp = false;
     });
+
+    if (!sent) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not send verification email. Please check connection and try resending on the next screen.'),
+          backgroundColor: AppTheme.secondaryColor,
+        ),
+      );
+    }
 
     // Navigate to 4-digit OTP verification screen
     Navigator.of(context).push(

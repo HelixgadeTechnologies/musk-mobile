@@ -25,13 +25,19 @@ class BrevoConfig {
   );
 
   /// Sender email address (must be a verified sender in your Brevo account)
-  static String senderEmail = 'bebe6d001@smtp-brevo.com';
+  static String senderEmail = const String.fromEnvironment(
+    'BREVO_SENDER_EMAIL',
+    defaultValue: 'info@muskmover.ng',
+  );
 
   /// Sender display name
   static String senderName = 'MuskMover Fleet Operations';
 
   /// Internal company email to receive notifications for customer enquiries
-  static String operationsNotificationEmail = 'info@muskmover.ng';
+  static String operationsNotificationEmail = const String.fromEnvironment(
+    'BREVO_OPERATIONS_EMAIL',
+    defaultValue: 'info@muskmover.ng',
+  );
 
   /// Checks if credentials have been configured
   static bool get isConfigured =>

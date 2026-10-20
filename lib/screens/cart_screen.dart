@@ -552,7 +552,7 @@ class _CartScreenState extends State<CartScreen> {
                                   );
 
                                   // Send email via Brevo
-                                  await BrevoEmailService.sendFleetEnquiryEmail(
+                                  final success = await BrevoEmailService.sendFleetEnquiryEmail(
                                     customerEmail: email,
                                     portLocation: portLocation,
                                     notes: noteController.text.trim(),
@@ -561,8 +561,21 @@ class _CartScreenState extends State<CartScreen> {
                                   );
 
                                   if (context.mounted) {
-                                    Navigator.pop(bottomSheetContext);
-                                    _showEnquirySuccessDialog(context, cartProvider, email, portLocation);
+                                    if (success) {
+                                      Navigator.pop(bottomSheetContext);
+                                      _showEnquirySuccessDialog(context, cartProvider, email, portLocation);
+                                    } else {
+                                      setSheetState(() {
+                                        isSubmitting = false;
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Failed to deliver enquiry email. Please check your connection and try again.'),
+                                          backgroundColor: AppTheme.secondaryColor,
+                                          duration: Duration(seconds: 4),
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
