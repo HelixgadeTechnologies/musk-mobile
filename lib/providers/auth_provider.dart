@@ -42,6 +42,16 @@ class AuthProvider extends ChangeNotifier {
     return '';
   }
 
+  String? get profileImage {
+    if (_user != null) {
+      final img = _user!['profileImage'] ?? _user!['avatar'] ?? _user!['photoUrl'];
+      if (img != null && img.toString().trim().isNotEmpty) {
+        return img.toString().trim();
+      }
+    }
+    return null;
+  }
+
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
   static const String _rememberMeKey = 'remember_me_enabled';
@@ -89,6 +99,11 @@ class AuthProvider extends ChangeNotifier {
           try {
             _user = json.decode(savedUser) as Map<String, dynamic>;
           } catch (_) {}
+        }
+        final savedImg = prefs.getString('saved_profile_image');
+        if (savedImg != null && savedImg.isNotEmpty) {
+          _user ??= <String, dynamic>{};
+          _user!['profileImage'] = savedImg;
         }
       } else {
         _isLoggedIn = false;
@@ -260,6 +275,89 @@ class AuthProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// Updates complete profile details in memory and SharedPreferences
+  Future<void> updateProfileDetails({
+    String? contactPersonName,
+    String? contactPersonEmail,
+    String? contactPersonPhone,
+    String? companyLegalName,
+    String? industrySector,
+    String? companyEmail,
+    String? companyPhone,
+    String? companyAddress,
+    String? profileImage,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final updatedUser = _user != null ? Map<String, dynamic>.from(_user!) : <String, dynamic>{};
+
+      if (contactPersonName != null && contactPersonName.trim().isNotEmpty) {
+        updatedUser['contactPersonName'] = contactPersonName.trim();
+        updatedUser['contactName'] = contactPersonName.trim();
+      }
+      if (contactPersonEmail != null && contactPersonEmail.trim().isNotEmpty) {
+        updatedUser['contactPersonEmail'] = contactPersonEmail.trim();
+        updatedUser['email'] = contactPersonEmail.trim();
+      }
+      if (contactPersonPhone != null && contactPersonPhone.trim().isNotEmpty) {
+        updatedUser['contactPersonPhone'] = contactPersonPhone.trim();
+        updatedUser['contactPhone'] = contactPersonPhone.trim();
+      }
+      if (companyLegalName != null && companyLegalName.trim().isNotEmpty) {
+        updatedUser['companyLegalName'] = companyLegalName.trim();
+        updatedUser['companyName'] = companyLegalName.trim();
+      }
+      if (industrySector != null && industrySector.trim().isNotEmpty) {
+        updatedUser['industrySector'] = industrySector.trim();
+      }
+      if (companyEmail != null && companyEmail.trim().isNotEmpty) {
+        updatedUser['companyEmail'] = companyEmail.trim();
+        await prefs.setString('saved_company_email', companyEmail.trim());
+      }
+      if (companyPhone != null && companyPhone.trim().isNotEmpty) {
+        updatedUser['companyPhone'] = companyPhone.trim();
+      }
+      if (companyAddress != null && companyAddress.trim().isNotEmpty) {
+        updatedUser['companyAddress'] = companyAddress.trim();
+        updatedUser['deliveryBase'] = companyAddress.trim();
+        updatedUser['address'] = companyAddress.trim();
+        await prefs.setString('saved_company_address', companyAddress.trim());
+        await prefs.setString('saved_delivery_base', companyAddress.trim());
+      }
+      if (profileImage != null) {
+        if (profileImage.trim().isEmpty) {
+          updatedUser.remove('profileImage');
+          await prefs.remove('saved_profile_image');
+        } else {
+          updatedUser['profileImage'] = profileImage.trim();
+          await prefs.setString('saved_profile_image', profileImage.trim());
+        }
+      }
+
+      _user = updatedUser;
+      await prefs.setString(_userKey, json.encode(_user));
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  /// Dedicated helper to update profile photo directly
+  Future<void> updateProfileImage(String? imagePath) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final updatedUser = _user != null ? Map<String, dynamic>.from(_user!) : <String, dynamic>{};
+      if (imagePath != null && imagePath.trim().isNotEmpty) {
+        updatedUser['profileImage'] = imagePath.trim();
+        await prefs.setString('saved_profile_image', imagePath.trim());
+      } else {
+        updatedUser.remove('profileImage');
+        await prefs.remove('saved_profile_image');
+      }
+      _user = updatedUser;
+      await prefs.setString(_userKey, json.encode(_user));
+      notifyListeners();
+    } catch (_) {}
+  }
+
   Future<void> logout() async {
     _isLoggedIn = false;
     _token = null;
@@ -267,6 +365,7 @@ class AuthProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userKey);
+    await prefs.remove('saved_profile_image');
     notifyListeners();
   }
 

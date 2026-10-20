@@ -49,6 +49,9 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
-	</dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MuskMover requires access to your photo library to allow you to upload and update your company or profile picture.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>MuskMover requires camera access to allow you to take and upload a profile picture.</string>
 </dict>
 </plist>

@@ -1,11 +1,18 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:musk_mover/app_theme.dart';
 import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/screens/login_screen.dart';
+import 'package:musk_mover/screens/enquiry_history_screen.dart';
+import 'package:musk_mover/screens/edit_profile_screen.dart';
+import 'package:musk_mover/providers/enquiry_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final VoidCallback? onBackToHome;
+
+  const ProfileScreen({super.key, this.onBackToHome});
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +38,25 @@ class ProfileScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.primaryColor, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else if (onBackToHome != null) {
+              onBackToHome!();
+            }
+          },
         ),
         title: const Text('Company Profile', style: TextStyle(color: AppTheme.primaryColor, fontSize: 18, fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: AppTheme.primaryColor),
-            onPressed: () {},
+            tooltip: 'Edit Profile',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -51,17 +69,40 @@ class ProfileScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                      border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.1), width: 2),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.business_rounded, size: 50, color: AppTheme.primaryColor),
-                    ),
+                  Stack(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                          border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.1), width: 2),
+                        ),
+                        child: ClipOval(
+                          child: _buildAvatarImage(authProvider.profileImage, size: 100),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: const BoxDecoration(
+                              color: AppTheme.primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 16),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -114,12 +155,20 @@ class ProfileScreen extends StatelessWidget {
             
             const SizedBox(height: 24),
             
-            // Account Section
+            // Operations Section
             _buildSectionHeader('Operations'),
             _buildInfoContainer([
-              _buildListItem(Icons.history_rounded, 'Enquiry History'),
-              _buildDivider(),
-              _buildListItem(Icons.description_outlined, 'Request Documents'),
+              _buildListItem(
+                Icons.history_rounded,
+                'Enquiry History',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const EnquiryHistoryScreen(),
+                    ),
+                  );
+                },
+              ),
             ]),
 
             const SizedBox(height: 24),
@@ -130,13 +179,13 @@ class ProfileScreen extends StatelessWidget {
               _buildListItem(
                 Icons.privacy_tip_outlined,
                 'Privacy Policy',
-                onTap: () => _showPrivacyPolicyDialog(context),
+                onTap: () => _launchWebUrl(context, 'https://muskmover.ng/privacy'),
               ),
               _buildDivider(),
               _buildListItem(
                 Icons.description_outlined,
                 'Terms of Service',
-                onTap: () => _showTermsDialog(context),
+                onTap: () => _launchWebUrl(context, 'https://muskmover.ng/terms'),
               ),
             ]),
 
@@ -302,23 +351,26 @@ class ProfileScreen extends StatelessWidget {
             onPressed: () async {
               Navigator.of(dialogContext).pop();
               final success = await authProvider.deleteAccount();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success
-                          ? 'Your account and data have been deleted.'
-                          : (authProvider.errorMessage ?? 'Failed to delete account. Please try again.'),
-                    ),
-                    backgroundColor: success ? AppTheme.primaryColor : AppTheme.secondaryColor,
+              if (!context.mounted) return;
+              if (success) {
+                await Provider.of<EnquiryProvider>(context, listen: false).clearEnquiries();
+              }
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    success
+                        ? 'Your account and data have been deleted.'
+                        : (authProvider.errorMessage ?? 'Failed to delete account. Please try again.'),
                   ),
+                  backgroundColor: success ? AppTheme.primaryColor : AppTheme.secondaryColor,
+                ),
+              );
+              if (success) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false,
                 );
-                if (success) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    (route) => false,
-                  );
-                }
               }
             },
             child: const Text('Delete Account', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -328,52 +380,57 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showPrivacyPolicyDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Privacy Policy', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const SingleChildScrollView(
-          child: Text(
-            'MuskMover is committed to protecting your privacy and business data. '
-            'We only collect information necessary to facilitate vessel chartering, marine logistics, and equipment procurement.\n\n'
-            '1. Data Collection: We collect company names, authorized contact details, and equipment preferences.\n'
-            '2. Data Usage: Information is used solely for order processing, logistics coordination, and account security.\n'
-            '3. Account Deletion: Users can request complete deletion of their account and associated data directly within the app or by emailing privacy@musklogistics.com.',
-            style: TextStyle(fontSize: 13, height: 1.4, color: AppTheme.textSecondaryColor),
+  Future<void> _launchWebUrl(BuildContext context, String urlString) async {
+    final uri = Uri.parse(urlString);
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        await launchUrl(uri);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open $urlString: $e'),
+            backgroundColor: AppTheme.secondaryColor,
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
+        );
+      }
+    }
   }
 
-  void _showTermsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Terms of Service', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const SingleChildScrollView(
-          child: Text(
-            'By using MuskMover, your company agrees to adhere to standard maritime chartering practices, commercial terms, and verification standards.\n\n'
-            'All enquiries, charters, and leases are subject to official verification and final lease agreements.',
-            style: TextStyle(fontSize: 13, height: 1.4, color: AppTheme.textSecondaryColor),
+  Widget _buildAvatarImage(String? imagePath, {double size = 100}) {
+    if (imagePath != null && imagePath.trim().isNotEmpty) {
+      final trimmed = imagePath.trim();
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return Image.network(
+          trimmed,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Center(
+            child: Icon(Icons.business_rounded, size: size * 0.5, color: AppTheme.primaryColor),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold)),
+        );
+      }
+      final file = File(trimmed);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Center(
+            child: Icon(Icons.business_rounded, size: size * 0.5, color: AppTheme.primaryColor),
           ),
-        ],
-      ),
+        );
+      }
+    }
+    return Center(
+      child: Icon(Icons.business_rounded, size: size * 0.5, color: AppTheme.primaryColor),
     );
   }
 }

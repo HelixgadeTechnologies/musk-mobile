@@ -6,7 +6,10 @@ import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/providers/product_provider.dart';
 import 'package:musk_mover/screens/marketplace_screen.dart';
 import 'package:musk_mover/services/brevo_email_service.dart';
+import 'dart:math';
 import 'package:musk_mover/app_theme.dart';
+import 'package:musk_mover/models/enquiry_model.dart';
+import 'package:musk_mover/providers/enquiry_provider.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -562,6 +565,35 @@ class _CartScreenState extends State<CartScreen> {
 
                                   if (context.mounted) {
                                     if (success) {
+                                      // Persist to Enquiry History
+                                      try {
+                                        final randRef = 1000 + Random().nextInt(9000);
+                                        final now = DateTime.now();
+                                        final dateStr = '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+                                        final enquiryId = 'ENQ-$dateStr-$randRef';
+                                        final enquiryItems = cartProvider.items.map((ci) => EnquiryItem(
+                                          id: ci.id,
+                                          name: ci.name,
+                                          type: ci.type,
+                                          quantity: ci.quantity,
+                                          imageUrl: resolveCartItemImage(ci, productProvider),
+                                        )).toList();
+
+                                        final newEnquiry = Enquiry(
+                                          id: enquiryId,
+                                          createdAt: now,
+                                          customerEmail: email,
+                                          portLocation: portLocation,
+                                          notes: noteController.text.trim(),
+                                          status: 'Submitted',
+                                          items: enquiryItems,
+                                        );
+
+                                        Provider.of<EnquiryProvider>(context, listen: false).addEnquiry(newEnquiry);
+                                      } catch (e) {
+                                        debugPrint('Error recording enquiry history: $e');
+                                      }
+
                                       Navigator.pop(bottomSheetContext);
                                       _showEnquirySuccessDialog(context, cartProvider, email, portLocation);
                                     } else {

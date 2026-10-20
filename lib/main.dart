@@ -12,6 +12,7 @@ import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/providers/cart_provider.dart';
 import 'package:musk_mover/providers/saved_provider.dart';
 import 'package:musk_mover/providers/product_provider.dart';
+import 'package:musk_mover/providers/enquiry_provider.dart';
 
 void main() {
   runApp(
@@ -21,6 +22,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => SavedProvider()),
+        ChangeNotifierProvider(create: (_) => EnquiryProvider()),
       ],
       child: const MuskMoverApp(),
     ),
@@ -79,17 +81,36 @@ class _MainScreenState extends State<MainScreen> {
           },
         ),
       ),
-      const RepaintBoundary(child: ProfileScreen(key: PageStorageKey('profile'))),
+      RepaintBoundary(
+        child: ProfileScreen(
+          key: const PageStorageKey('profile'),
+          onBackToHome: () {
+            setState(() {
+              _currentIndex = 0;
+            });
+          },
+        ),
+      ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+          });
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _screens,
+        ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -141,8 +162,9 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: AppTheme.logoOrange,
         child: const Icon(Icons.support_agent_rounded, color: Colors.white),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class HomePage extends StatefulWidget {
@@ -172,7 +194,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.menu_rounded, color: Colors.black), onPressed: () {}),
+        automaticallyImplyLeading: false,
         title: const Text('MUSKMOVER', style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 18)),
         centerTitle: true,
         actions: [
