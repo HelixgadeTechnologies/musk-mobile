@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:musk_mover/models/product_model.dart';
@@ -52,20 +53,35 @@ class ApiService {
 
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': email,
-          'password': password,
-        }),
-      );
-      final Map<String, dynamic> responseData = json.decode(response.body);
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/login'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'email': email.trim(),
+              'password': password,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      Map<String, dynamic> responseData;
+      try {
+        final decoded = json.decode(response.body);
+        responseData = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+      } catch (_) {
+        if (response.statusCode >= 500) {
+          throw Exception('Server temporarily unavailable (${response.statusCode}). Please try again in a moment.');
+        }
+        throw Exception('Unexpected server response. Please try again.');
+      }
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return responseData;
       } else {
-        throw Exception(responseData['message'] ?? responseData['error'] ?? 'Failed to login');
+        throw Exception(responseData['message'] ?? responseData['error'] ?? 'Invalid email or password');
       }
+    } on TimeoutException {
+      throw Exception('Connection timed out. Please check your internet connection and try again.');
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Login error: $e');
@@ -74,17 +90,32 @@ class ApiService {
 
   Future<Map<String, dynamic>> registerUser(Map<String, dynamic> userData) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(userData),
-      );
-      final Map<String, dynamic> responseData = json.decode(response.body);
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/register'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(userData),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      Map<String, dynamic> responseData;
+      try {
+        final decoded = json.decode(response.body);
+        responseData = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+      } catch (_) {
+        if (response.statusCode >= 500) {
+          throw Exception('Server temporarily unavailable (${response.statusCode}). Please try again in a moment.');
+        }
+        throw Exception('Unexpected server response. Please try again.');
+      }
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return responseData;
       } else {
-        throw Exception(responseData['message'] ?? responseData['error'] ?? 'Failed to register');
+        throw Exception(responseData['message'] ?? responseData['error'] ?? 'Registration failed');
       }
+    } on TimeoutException {
+      throw Exception('Connection timed out. Please check your internet connection and try again.');
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Registration error: $e');

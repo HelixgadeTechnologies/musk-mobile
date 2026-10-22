@@ -58,6 +58,8 @@ class _SignupScreenState extends State<SignupScreen> {
         : _companyNameController.text.trim();
 
     final userData = {
+      'email': targetEmail,
+      'name': targetName,
       'contactPersonName': _contactNameController.text.trim(),
       'contactPersonEmail': _contactEmailController.text.trim(),
       'contactPersonPhone': _contactPhoneController.text.trim(),

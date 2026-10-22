@@ -230,8 +230,11 @@ class AuthProvider extends ChangeNotifier {
       await prefs.setBool(_rememberMeKey, true);
       final thirtyDaysExpiry = DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch;
       await prefs.setInt(_sessionExpiryKey, thirtyDaysExpiry);
-      if (userData['email'] != null && (userData['email'] as String).isNotEmpty) {
-        await prefs.setString(_savedEmailKey, userData['email']);
+      final emailToSave = userData['email'] ??
+          userData['contactPersonEmail'] ??
+          userData['companyEmail'];
+      if (emailToSave != null && emailToSave.toString().trim().isNotEmpty) {
+        await prefs.setString(_savedEmailKey, emailToSave.toString().trim());
       }
       if (userData['password'] != null && (userData['password'] as String).isNotEmpty) {
         await prefs.setString(_savedPasswordKey, userData['password']);

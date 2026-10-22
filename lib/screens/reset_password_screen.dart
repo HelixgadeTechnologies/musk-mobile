@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:musk_mover/app_theme.dart';
+import 'package:musk_mover/providers/auth_provider.dart';
 import 'package:musk_mover/screens/login_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -35,6 +37,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     setState(() {
       _isLoading = true;
     });
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.clearSavedCredentials();
 
     // Simulate password update
     await Future.delayed(const Duration(milliseconds: 900));
